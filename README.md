@@ -226,3 +226,28 @@ Created by [Phaser Studio](mailto:support@phaser.io). Powered by coffee, anime, 
 The Phaser logo and characters are &copy; 2011 - 2024 Phaser Studio Inc.
 
 All rights reserved.
+
+## Authentication with Privy
+
+This project uses [Privy](https://privy.io/) for authentication. To set up Privy:
+
+1. Create an account on [Privy](https://privy.io/)
+2. Create a new application in the Privy dashboard
+3. Copy your Privy App ID
+4. Create a `.env.local` file in the root of the project and add:
+   ```
+   NEXT_PUBLIC_PRIVY_APP_ID=your-privy-app-id-here
+   ```
+5. Replace `your-privy-app-id-here` with your actual Privy App ID
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Run the development server
+pnpm dev
+```
+
+Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
