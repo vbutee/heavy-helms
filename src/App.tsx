@@ -2,7 +2,12 @@ import { useRef, useState } from 'react';
 import { IRefPhaserGame, PhaserGame } from './game/PhaserGame';
 import { MainMenu } from './game/scenes/MainMenu';
 
-function App()
+interface AppProps {
+    player1Id?: string;
+    player2Id?: string;
+}
+
+function App({ player1Id, player2Id }: AppProps)
 {
     // The sprite can only be moved in the MainMenu Scene
     const [canMoveSprite, setCanMoveSprite] = useState(true);
@@ -80,9 +85,12 @@ function App()
         
     }
 
+    // Log player IDs for debugging
+    console.log('Player IDs:', { player1Id, player2Id });
+
     return (
         <div id="app">
-            <PhaserGame ref={phaserRef} currentActiveScene={currentScene} />
+            <PhaserGame ref={phaserRef} currentActiveScene={currentScene} player1Id={player1Id} player2Id={player2Id} />
             <div>
                 <div>
                     <button className="button" onClick={changeScene}>Change Scene</button>

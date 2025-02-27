@@ -240,6 +240,31 @@ This project uses [Privy](https://privy.io/) for authentication. To set up Privy
    ```
 5. Replace `your-privy-app-id-here` with your actual Privy App ID
 
+## Authentication Flow
+
+The application implements a complete authentication flow using Privy:
+
+1. **Landing Page**: Unauthenticated users see a landing page with game information and a login button.
+2. **Authentication**: Users can authenticate using Privy's various login methods (email, wallet, etc.).
+3. **Character Selection**: After authentication, users are presented with a character selection screen.
+4. **Game Access**: Once a character is selected, users can access the Phaser game with their chosen character.
+5. **Protected Routes**: The game page is protected and only accessible to authenticated users.
+6. **Logout**: Users can log out from both the character selection screen and within the game.
+
+## Character Selection
+
+The character selection screen allows authenticated users to:
+
+1. Browse available characters with different stats and equipment
+2. Select a character to play with
+3. Start the game with their selected character
+4. Log out if needed
+
+Each character has unique attributes:
+- Stance (offensive, defensive, balanced)
+- Weapon and armor types
+- Stats (strength, constitution, size, agility, stamina, luck)
+
 ## Development
 
 ```bash
@@ -250,4 +275,13 @@ pnpm install
 pnpm dev
 ```
 
-Open [http://localhost:8080](http://localhost:8080) with your browser to see the result.
+## Project Structure
+
+- `src/pages/index.tsx` - Landing page and character selection
+- `src/pages/game.tsx` - Protected game page
+- `src/components/LandingPage.tsx` - Component for unauthenticated users
+- `src/components/CharacterCard.tsx` - Character selection card component
+- `src/components/InfoBanner.tsx` - Reusable information banner component
+- `src/components/ProtectedGame.tsx` - Wrapper for the Phaser game with authentication
+- `src/App.tsx` - Main game component
+- `src/game/` - Phaser game implementation

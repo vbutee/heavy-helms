@@ -1,15 +1,16 @@
+'use client'
+
 import { usePrivy } from '@privy-io/react-auth'
 import { useEffect } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import styles from '@/styles/ProtectedGame.module.css'
 
 // Import the App component without SSR
 const AppWithoutSSR = dynamic(() => import('@/App'), { ssr: false })
 
 interface ProtectedGameProps {
-  player1Id?: string
-  player2Id?: string
+  player1Id?: string | null
+  player2Id?: string | null
 }
 
 function ProtectedGame({ player1Id, player2Id }: ProtectedGameProps) {
@@ -26,9 +27,11 @@ function ProtectedGame({ player1Id, player2Id }: ProtectedGameProps) {
   // Show loading state while checking authentication
   if (!ready || !authenticated) {
     return (
-      <div className="loading-container">
-        <div className="loading-spinner"></div>
-        <p>Loading game...</p>
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-amber-800 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-amber-400 text-lg">Loading game...</p>
+        </div>
       </div>
     )
   }
@@ -41,14 +44,14 @@ function ProtectedGame({ player1Id, player2Id }: ProtectedGameProps) {
 
   // Show the game if authenticated
   return (
-    <div className={styles.gameContainer}>
+    <div className="relative w-full h-full">
       <button 
-        className={styles.logoutButton}
+        className="absolute top-4 right-4 z-50 bg-amber-800 hover:bg-amber-700 text-white px-4 py-2 rounded-md transition-colors"
         onClick={handleLogout}
       >
         Logout
       </button>
-      <AppWithoutSSR player1Id={player1Id} player2Id={player2Id} />
+      <AppWithoutSSR player1Id={player1Id || undefined} player2Id={player2Id || undefined} />
     </div>
   )
 }
