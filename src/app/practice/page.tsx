@@ -47,19 +47,19 @@ export default function PracticePage() {
   console.log(player1Id, player2Id);
   return (
     <div className="min-h-screen flex flex-col bg-stone-9000">
-      <header className="p-4 flex justify-between items-center bg-stone-800 border-b border-yellow-600/20">
+      <header className="p-4 flex justify-between items-center bg-stone-800 border-b border-yellow-600/20 opacity-30">
         <h1 className="text-2xl font-bold text-yellow-400">Practice Arena</h1>
         <Button
           variant="outline"
           className="border-yellow-600/30 text-yellow-400 hover:bg-yellow-600/10"
-          onClick={() => router.push("/")}
+          onClick={() => router.replace("/")}
         >
           Exit Practice
         </Button>
       </header>
 
-      <main className="flex-1 p-4 flex flex-col">
-        <div className="flex-1 bg-black rounded-lg overflow-hidden border border-yellow-600/20 shadow-lg items-center justify-center flex">
+      <main className="p-4 flex flex-col">
+        <div className="flex-1 bg-opacity-70 rounded-lg overflow-hidden border border-yellow-600/20 shadow-lg items-center justify-center flex p-12">
           {/* Game container */}
           <div className="flex items-center justify-center flex-1 z-10">
             <ErrorBoundary FallbackComponent={GameErrorFallback}>
@@ -73,29 +73,7 @@ export default function PracticePage() {
             </ErrorBoundary>
           </div>
         </div>
-
-        <div className="mt-4 p-4 bg-stone-800/50 rounded-lg border border-yellow-600/10">
-          <h2 className="text-lg font-medium text-yellow-400 mb-2">
-            Combat Controls
-          </h2>
-          <p className="text-stone-300 text-sm">
-            Press{" "}
-            <span className="px-2 py-1 bg-stone-700 rounded text-xs font-mono">
-              R
-            </span>{" "}
-            to restart the combat sequence.
-          </p>
-        </div>
       </main>
     </div>
   );
-  //   return (
-  //     <main className="flex min-h-screen flex-col items-center justify-between">
-  //       <ErrorBoundary FallbackComponent={GameErrorFallback}>
-  //         <Suspense fallback={<div>Loading game...</div>}>
-  //           <GameWrapper player1Id={player1Id} player2Id={player2Id} />
-  //         </Suspense>
-  //       </ErrorBoundary>
-  //     </main>
-  //   );
 }

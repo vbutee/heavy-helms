@@ -29,7 +29,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${bokor.className} min-h-screen flex flex-col`}>
         {/* Background with reduced opacity */}
-        <div className="fixed inset-0 z-0">
+        <div className="fixed inset-0 -z-1">
           <Image
             src="/parchment_bkg6.jpg"
             alt="Background"
