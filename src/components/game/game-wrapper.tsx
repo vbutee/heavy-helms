@@ -23,7 +23,7 @@ export function GameWrapper({ player1Id, player2Id }: GameWrapperProps) {
   if (!isClient) return null;
 
   return (
-    <div className="w-full h-full">
+    <div className="w-[960px] h-[540px] z-10">
       <PhaserGame player1Id={player1Id} player2Id={player2Id} />
     </div>
   );
