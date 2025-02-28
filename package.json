@@ -33,6 +33,7 @@
     "dependencies": {
         "@privy-io/react-auth": "^2.5.0",
         "@radix-ui/react-slot": "^1.1.2",
+        "alchemy-sdk": "^3.5.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "framer-motion": "^12.4.7",
@@ -42,7 +43,8 @@
         "react": "^18",
         "react-dom": "^18",
         "tailwind-merge": "^3.0.2",
-        "tailwindcss-animate": "^1.0.7"
+        "tailwindcss-animate": "^1.0.7",
+        "viem": "^2.23.5"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",
