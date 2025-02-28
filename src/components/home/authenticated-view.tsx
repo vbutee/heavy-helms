@@ -6,6 +6,8 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/types/player.types";
 import { CTAButton } from "../ui/cta-button";
+import { useState, useRef } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
 interface AuthenticatedViewProps {
   characters: Character[];
@@ -13,6 +15,22 @@ interface AuthenticatedViewProps {
 
 export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
   const router = useRouter();
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null);
+  const battleSectionRef = useRef<HTMLElement>(null);
+
+  // Function to select a character
+  const handleSelectCharacter = (character: Character) => {
+    setSelectedCharacter(character);
+    // Scroll to battle section after a short delay
+    setTimeout(() => {
+      battleSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 300);
+  };
+
+  // Function to view character details
+  const viewCharacterDetails = (characterId: string) => {
+    router.push(`/character/${characterId}`);
+  };
 
   return (
     <div className="max-w-7xl mx-auto">
@@ -42,54 +60,90 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
         {/* Character Carousel */}
         <div className="relative overflow-hidden">
           <div className="flex gap-6 px-4 overflow-x-auto pb-4 snap-x">
-            {characters.map((character, index) => (
-              <motion.div
-                key={character.playerId}
-                className="min-w-[220px] bg-gradient-to-b from-amber-900/20 to-stone-900/40 rounded-lg border border-yellow-600/30 overflow-hidden snap-start"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                whileHover={{ scale: 1.02, borderColor: "rgba(217, 119, 6, 0.5)" }}
-              >
-                <div className="aspect-square relative bg-gradient-to-b from-stone-800/30 to-stone-900/30 overflow-hidden">
-                  <div className="absolute inset-0 p-1">
-                    <div className="relative h-full w-full overflow-hidden rounded">
-                      <Image
-                        src={character.imageUrl}
-                        alt={character.name}
-                        fill
-                        className="object-cover transition-transform duration-500 hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, 220px"
-                        priority={index < 2}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 via-transparent to-transparent" />
+            {characters.map((character, index) => {
+              const isSelected = selectedCharacter?.playerId === character.playerId;
+              
+              return (
+                <motion.div
+                  key={character.playerId}
+                  className={`min-w-[220px] bg-gradient-to-b from-amber-900/20 to-stone-900/40 rounded-lg ${
+                    isSelected 
+                      ? "border-2 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]" 
+                      : "border border-yellow-600/30"
+                  } overflow-hidden snap-start transition-all duration-300`}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ 
+                    opacity: 1, 
+                    y: 0,
+                    scale: isSelected ? 1.03 : 1 
+                  }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  whileHover={{ 
+                    scale: isSelected ? 1.03 : 1.02, 
+                    borderColor: isSelected ? "rgba(234,179,8,1)" : "rgba(217,119,6,0.5)" 
+                  }}
+                >
+                  <div className="aspect-square relative bg-gradient-to-b from-stone-800/30 to-stone-900/30 overflow-hidden">
+                    <div className="absolute inset-0 p-1">
+                      <div className="relative h-full w-full overflow-hidden rounded">
+                        <Image
+                          src={character.imageUrl}
+                          alt={character.name}
+                          fill
+                          className="object-cover transition-transform duration-500 hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 220px"
+                          priority={index < 2}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-stone-900/70 via-transparent to-transparent" />
+                      </div>
+                    </div>
+                    <div className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-amber-900/60 border border-yellow-600/40">
+                      <span className="text-xs font-bold text-yellow-400">{character.playerId.substring(character.playerId.length - 2)}</span>
+                    </div>
+                    {isSelected && (
+                      <div className="absolute top-2 left-2 w-8 h-8 flex items-center justify-center rounded-full bg-yellow-600/80 border border-yellow-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" role="img" aria-label="Selected">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="text-lg font-bold text-yellow-400 mb-1">
+                      {character.name}
+                    </h3>
+                    <div className="flex justify-between text-xs text-stone-300 mb-2">
+                      <span>{character.weapon}</span>
+                      <span>{character.armor}</span>
+                    </div>
+                    <div className="mt-3 space-y-2">
+                      {isSelected ? (
+                        <div className="flex items-center justify-center space-x-1 py-1.5 bg-gradient-to-r from-yellow-600 to-amber-500 rounded text-white font-medium">
+                          <span>Selected</span>
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true" role="img" aria-label="Checkmark">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        </div>
+                      ) : (
+                        <Button
+                          className="w-full bg-gradient-to-r from-amber-700 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-stone-100"
+                          onClick={() => handleSelectCharacter(character)}
+                        >
+                          Select
+                        </Button>
+                      )}
+                      <Button
+                        variant="outline"
+                        className="w-full border-yellow-600/30 text-yellow-400 hover:bg-yellow-600/10"
+                        onClick={() => viewCharacterDetails(character.playerId)}
+                      >
+                        View Details
+                      </Button>
                     </div>
                   </div>
-                  <div className="absolute top-2 right-2 w-8 h-8 flex items-center justify-center rounded-full bg-amber-900/60 border border-yellow-600/40">
-                    <span className="text-xs font-bold text-yellow-400">{character.playerId.substring(character.playerId.length - 2)}</span>
-                  </div>
-                </div>
-                <div className="p-4">
-                  <h3 className="text-lg font-bold text-yellow-400 mb-1">
-                    {character.name}
-                  </h3>
-                  <div className="flex justify-between text-xs text-stone-300 mb-2">
-                    <span>{character.weapon}</span>
-                    <span>{character.armor}</span>
-                  </div>
-                  <div className="mt-3">
-                    <Button
-                      className="w-full bg-gradient-to-r from-amber-700 to-yellow-600 hover:from-amber-600 hover:to-yellow-500 text-stone-100"
-                      onClick={() =>
-                        router.push(`/character/${character.playerId}`)
-                      }
-                    >
-                      Select
-                    </Button>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
+                </motion.div>
+              );
+            })}
 
             {/* Add New Character Card */}
             <motion.div
@@ -116,10 +170,30 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
             </motion.div>
           </div>
         </div>
+
+        {/* Scroll indicator if character is selected */}
+        {selectedCharacter && (
+          <motion.div 
+            className="flex justify-center mt-6"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <button 
+              className="flex flex-col items-center group focus:outline-none focus:ring-2 focus:ring-yellow-500/40 rounded-md px-3 py-1"
+              onClick={() => battleSectionRef.current?.scrollIntoView({ behavior: "smooth" })}
+              aria-label="Scroll to battle section"
+              type="button"
+            >
+              <span className="text-yellow-400/70 text-sm mb-1 group-hover:text-yellow-400">Choose your battle below</span>
+              <ChevronDown className="h-5 w-5 text-yellow-500/70 animate-bounce group-hover:text-yellow-500" />
+            </button>
+          </motion.div>
+        )}
       </section>
 
       {/* Game Modes Section */}
-      <section className="mb-12">
+      <section ref={battleSectionRef} className="mb-12 scroll-mt-4">
         <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
@@ -144,7 +218,7 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Practice Mode */}
           <motion.div
-            className="bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border border-yellow-600/20 p-6"
+            className={`bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border ${selectedCharacter ? 'border-yellow-600/40' : 'border-yellow-600/20'} p-6 relative`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3 }}
@@ -160,14 +234,25 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
             </p>
             <CTAButton
               title="Enter Practice"
-              onClick={() => router.push("/practice")}
+              onClick={() => selectedCharacter 
+                ? router.push(`/practice?characterId=${selectedCharacter.playerId}`) 
+                : alert("Please select a character first")
+              }
               size="default"
             />
+            {!selectedCharacter && (
+              <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                <div className="text-center p-4">
+                  <span className="text-yellow-400/80 block mb-2">Select a character first</span>
+                  <ChevronUp className="h-6 w-6 text-yellow-400/60 mx-auto animate-bounce" />
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Duel Mode */}
           <motion.div
-            className="bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border border-yellow-600/20 p-6"
+            className={`bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border ${selectedCharacter ? 'border-yellow-600/40' : 'border-yellow-600/20'} p-6 relative`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
@@ -183,14 +268,25 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
             </p>
             <CTAButton
               title="Find Opponent"
-              onClick={() => router.push("/duel")}
+              onClick={() => selectedCharacter 
+                ? router.push(`/duel?characterId=${selectedCharacter.playerId}`) 
+                : alert("Please select a character first")
+              }
               size="default"
             />
+            {!selectedCharacter && (
+              <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                <div className="text-center p-4">
+                  <span className="text-yellow-400/80 block mb-2">Select a character first</span>
+                  <ChevronUp className="h-6 w-6 text-yellow-400/60 mx-auto animate-bounce" />
+                </div>
+              </div>
+            )}
           </motion.div>
 
           {/* Tutorial Mode */}
           <motion.div
-            className="bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border border-yellow-600/20 p-6"
+            className={`bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border ${selectedCharacter ? 'border-yellow-600/40' : 'border-yellow-600/20'} p-6 relative`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.5 }}
@@ -206,9 +302,20 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
             </p>
             <CTAButton
               title="Begin Training"
-              onClick={() => router.push("/tutorial")}
+              onClick={() => selectedCharacter 
+                ? router.push(`/tutorial?characterId=${selectedCharacter.playerId}`) 
+                : alert("Please select a character first")
+              }
               size="default"
             />
+            {!selectedCharacter && (
+              <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
+                <div className="text-center p-4">
+                  <span className="text-yellow-400/80 block mb-2">Select a character first</span>
+                  <ChevronUp className="h-6 w-6 text-yellow-400/60 mx-auto animate-bounce" />
+                </div>
+              </div>
+            )}
           </motion.div>
         </div>
       </section>
