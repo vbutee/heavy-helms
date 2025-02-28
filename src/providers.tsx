@@ -16,13 +16,14 @@ function Providers({ children }: ProvidersProps) {
         appearance: {
           theme: "dark",
           accentColor: "#f9c846",
-          logo: "/logo.png",
+          // logo: "/logo.png",
         },
         embeddedWallets: {
           createOnLogin: "users-without-wallets",
         },
       }}
     >
+      {/* Initialize EventBus globally for Phaser games */}
       {children}
     </PrivyProvider>
   );

@@ -139,6 +139,8 @@ export async function loadCharacterData(
     const fighterType = getFighterType(playerId.toString());
     const contractInfo = getContractInfo(fighterType);
 
+    console.log("Contract info:", contractInfo);
+
     // Get contract address
     const contractAddress = (await client.readContract({
       address: process.env
@@ -147,6 +149,9 @@ export async function loadCharacterData(
       functionName: contractInfo.contractFunction,
     })) as Address;
 
+    console.log("Contract address:", contractAddress);
+
+    console.log("Player data being loaded for: ", playerId, typeof playerId);
     // Get fighter stats
     try {
       const playerStats = (await client.readContract({
@@ -155,6 +160,8 @@ export async function loadCharacterData(
         functionName: contractInfo.method,
         args: [BigInt(playerId)],
       })) as PlayerStats;
+
+      console.log("Player stats:", playerStats);
 
       if (!playerStats) {
         throw new Error(`No fighter data found for ID ${playerId}`);
@@ -172,6 +179,8 @@ export async function loadCharacterData(
           functionName: "nameRegistry",
         })) as Address;
 
+        console.log("Name registry address:", nameRegistryAddress);
+
         const names = (await client.readContract({
           address: nameRegistryAddress,
           abi: PlayerNameRegistryABI,
@@ -184,7 +193,11 @@ export async function loadCharacterData(
 
         playerName[0] = names[0];
         playerName[1] = names[1];
+        console.log("names:", names);
       }
+
+
+      console.log("Player name:", playerName);
 
       // Get GameEngine address from PracticeGame contract
       const gameEngineAddress = (await client.readContract({
@@ -193,6 +206,8 @@ export async function loadCharacterData(
         abi: PracticeGameABI,
         functionName: "gameEngine",
       })) as Address;
+
+      console.log("Game engine address:", gameEngineAddress);
 
       // Create FighterStats structure for GameEngine calculation
       const fighterStats: FighterStats = {

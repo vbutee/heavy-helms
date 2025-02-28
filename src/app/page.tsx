@@ -17,7 +17,7 @@ import { AuthenticatedView } from "@/components/home/authenticated-view";
 // Sample character data - will be moved to a service later
 const characters: Character[] = [
   {
-    playerId: "10014",
+    playerId: "10009",
     name: "Ross of the Glade",
     imageUrl:
       "https://ipfs.io/ipfs/bafkreici37rg5rtnr4vsnjeprl5e7khjy2dse7y3ahwivxbsnde6o2x3sy",
@@ -47,7 +47,7 @@ const characters: Character[] = [
     luck: 9,
   },
   {
-    playerId: "10031",
+    playerId: "10009",
     name: "Diego Frostcaller",
     imageUrl:
       "https://ipfs.io/ipfs/QmZqrNGPB2ck2ECdhKZEFaJyVM1YtNDLrhmWN5CxvZTqr5",

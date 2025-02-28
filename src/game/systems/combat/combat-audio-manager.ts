@@ -20,8 +20,8 @@ export class CombatAudioManager {
     this.activeSounds = new Set()
 
     // Handle window blur/focus
-    window.addEventListener("blur", () => this.stopAllSounds())
-    window.addEventListener("focus", () => this.stopAllSounds())
+    // window.addEventListener("blur", () => this.stopAllSounds())
+    // window.addEventListener("focus", () => this.stopAllSounds())
   }
 
   async init(): Promise<void> {

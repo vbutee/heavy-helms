@@ -43,6 +43,7 @@
         "phaser": "^3.88.2",
         "react": "^18",
         "react-dom": "^18",
+        "react-error-boundary": "^5.0.0",
         "tailwind-merge": "^3.0.2",
         "tailwindcss-animate": "^1.0.7",
         "viem": "^2.23.5",

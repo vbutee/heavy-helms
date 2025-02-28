@@ -114,8 +114,8 @@ async function decodeCombatBytes(
 }
 
 export async function loadCombatBytes(
-  player1Id: number,
-  player2Id: number,
+  player1Id: string,
+  player2Id: string,
 ): Promise<DecodedCombatResult> {
   try {
     const networkName = process.env.NEXT_PUBLIC_ALCHEMY_NETWORK?.toLowerCase();
@@ -229,7 +229,7 @@ export async function loadCombatBytes(
     });
 
     const result: DecodedCombatResult = {
-      winner: decodedCombat[0] ? player1Id : player2Id,
+      winner: decodedCombat[0] ? Number(player1Id) : Number(player2Id),
       condition: getEnumKeyByValue(
         WinCondition as unknown as Record<string, number>,
         Number(decodedCombat[2]),

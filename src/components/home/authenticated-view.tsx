@@ -91,7 +91,7 @@ function WarriorSelection({
         <div className="flex gap-6 px-4 overflow-x-auto pb-4 snap-x">
           {characters.map((character, index) => (
             <CharacterCard
-              key={character.playerId}
+              key={character.playerId + index}
               character={character}
               index={index}
               isSelected={selectedCharacter?.playerId === character.playerId}
@@ -384,7 +384,7 @@ function BattleCard({
     }
     
     if (selectedCharacter) {
-      router.push(`${battleType.route}?characterId=${selectedCharacter.playerId}`);
+      router.push(`${battleType.route}?player1Id=${selectedCharacter.playerId}&player2Id=2`);
     } else {
       alert("Please select a character first");
     }
