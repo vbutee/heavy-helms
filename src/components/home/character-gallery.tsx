@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import CharacterCard from "../CharacterCard";
 import type { Character } from "@/types/player.types";
+import { usePrivy } from "@privy-io/react-auth";
 
 interface CharacterGalleryProps {
   characters: Character[];
@@ -10,61 +11,40 @@ interface CharacterGalleryProps {
 
 export function CharacterGallery({ characters }: CharacterGalleryProps) {
   return (
-    <section className="relative py-20">
-      {/* Dark overlay with textured base */}
-      <div className="absolute inset-0 bg-stone-900/75" />
-      
-      {/* Decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-r from-amber-700/20 via-yellow-600/40 to-amber-700/20" />
-      <div className="absolute bottom-0 left-0 w-full h-4 bg-gradient-to-r from-amber-700/20 via-yellow-600/40 to-amber-700/20" />
-      
+    <section className="relative py-12">
+      {/* Decorative borders and background */}
+      <BorderDecoration />
+
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Decorative shield icon */}
-        {/* <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 bg-yellow-600/30 rotate-45 flex items-center justify-center">
-            <div className="w-12 h-12 bg-stone-900 rotate-[-45deg] flex items-center justify-center">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                viewBox="0 0 24 24" 
-                fill="currentColor" 
-                className="w-8 h-8 text-yellow-400/80"
-                aria-hidden="true"
-                role="img"
-                aria-label="Shield Icon"
-              >
-                <path d="M12.378 1.602a.75.75 0 00-.756 0L3 6.632l9 5.25 9-5.25-8.622-5.03zM21.75 7.93l-9 5.25v9l8.628-5.032a.75.75 0 00.372-.648V7.93zM11.25 22.18v-9l-9-5.25v8.57a.75.75 0 00.372.648l8.628 5.033z" />
-              </svg>
-            </div>
-          </div>
-        </div> */}
-        
         {/* Section Header */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-8">
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7 }}
           >
-            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-600 uppercase tracking-widest mb-2">
+            <h2 className="text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-600 uppercase tracking-widest mb-1">
               Forge Your Legend
             </h2>
-            <div className="flex items-center justify-center mb-6">
+            <div className="flex items-center justify-center mb-3">
               <div className="h-[1px] w-16 bg-yellow-600/40" />
               <div className="mx-4">
-                <span className="text-yellow-400/90 text-sm font-medium tracking-widest">WARRIORS AWAIT</span>
+                <span className="text-yellow-400/90 text-sm font-medium tracking-widest">
+                  WARRIORS AWAIT
+                </span>
               </div>
               <div className="h-[1px] w-16 bg-yellow-600/40" />
             </div>
-            <p className="text-stone-200 text-lg max-w-2xl mx-auto leading-relaxed">
-              Ancient warriors, seasoned by battle and blessed by forgotten gods, stand ready for your command. 
-              Each champion carries centuries of martial wisdom and arcane might. 
-              Choose wisely, for your destiny in the Heavy Helms arena is bound to theirs.
+            <p className="text-stone-200 text-base max-w-2xl mx-auto leading-relaxed">
+              Ancient warriors, blessed by forgotten gods, stand ready for your
+              command. Choose wisely, for your destiny in the Heavy Helms arena
+              is bound to theirs.
             </p>
           </motion.div>
         </div>
 
         {/* Character Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {characters.map((character, index) => (
             <motion.div
               key={character.name}
@@ -92,24 +72,86 @@ export function CharacterGallery({ characters }: CharacterGalleryProps) {
         </div>
 
         {/* Call to Action */}
-        <div className="mt-20 text-center">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.98 }}
-          >
-            <button
-              type="button"
-              className="bg-gradient-to-b from-amber-700/40 to-stone-900/80 backdrop-blur-sm px-10 py-5 rounded border border-yellow-600/30 shadow-lg group relative overflow-hidden"
-            >
-              <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/0 via-yellow-400/20 to-yellow-600/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-              <span className="text-yellow-400/90 text-lg font-bold uppercase tracking-widest group-hover:text-yellow-300 relative z-10">
-                Claim Your Destiny
-              </span>
-            </button>
-          </motion.div>
-          <p className="text-stone-400 text-sm mt-4 italic">Connect wallet to enter the arena</p>
+        <div className="mt-10 text-center">
+          <CTAButton />
+          <p className="text-stone-400 text-xs mt-2 italic">
+            Connect wallet to enter the arena
+          </p>
         </div>
       </div>
     </section>
+  );
+}
+
+function CTAButton() {
+  const { login } = usePrivy();
+  return (
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+      <button
+        type="button"
+        onClick={() => login()}
+        className="bg-gradient-to-b from-amber-700/40 to-stone-900/80 backdrop-blur-sm px-8 py-4 rounded border border-yellow-600/30 shadow-lg group relative overflow-hidden"
+      >
+        <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/0 via-yellow-400/20 to-yellow-600/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+        <span className="text-yellow-400/90 text-lg font-bold uppercase tracking-widest group-hover:text-yellow-300 relative z-10">
+          Claim Your Destiny
+        </span>
+      </button>
+    </motion.div>
+  );
+}
+
+// Component for decorative borders and corner elements
+function BorderDecoration() {
+  return (
+    <>
+      {/* Dark overlay with textured base */}
+      <div className="absolute inset-0 bg-stone-900/80" />
+
+      {/* Inner glow effect */}
+      <div className="absolute inset-0 shadow-[inset_0_0_100px_rgba(30,20,10,0.8)]" />
+
+      {/* Decorative top border */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-700/30 via-yellow-500/50 to-amber-700/30" />
+      <div className="absolute top-1 left-0 w-full h-3 bg-gradient-to-r from-amber-800/20 via-yellow-600/30 to-amber-800/20" />
+      <div className="absolute top-4 left-0 w-full h-0.5 bg-amber-600/10" />
+
+      {/* Decorative bottom border */}
+      <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-amber-700/30 via-yellow-500/50 to-amber-700/30" />
+      <div className="absolute bottom-1 left-0 w-full h-3 bg-gradient-to-r from-amber-800/20 via-yellow-600/30 to-amber-800/20" />
+      <div className="absolute bottom-4 left-0 w-full h-0.5 bg-amber-600/10" />
+
+      {/* Decorative corner elements - top left */}
+      <div className="absolute top-0 left-0 w-20 h-20 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-0 w-[2px] h-16 bg-gradient-to-b from-yellow-500/70 to-transparent" />
+        <div className="absolute top-0 left-0 h-[2px] w-16 bg-gradient-to-r from-yellow-500/70 to-transparent" />
+        <div className="absolute top-0 left-0 w-10 h-10 border-t-2 border-l-2 border-yellow-500/30 rounded-tl-sm" />
+        <div className="absolute top-3 left-3 w-6 h-6 border-t border-l border-yellow-600/20 rounded-tl-sm" />
+      </div>
+
+      {/* Decorative corner elements - top right */}
+      <div className="absolute top-0 right-0 w-20 h-20 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 right-0 w-[2px] h-16 bg-gradient-to-b from-yellow-500/70 to-transparent" />
+        <div className="absolute top-0 right-0 h-[2px] w-16 bg-gradient-to-r from-transparent to-yellow-500/70" />
+        <div className="absolute top-0 right-0 w-10 h-10 border-t-2 border-r-2 border-yellow-500/30 rounded-tr-sm" />
+        <div className="absolute top-3 right-3 w-6 h-6 border-t border-r border-yellow-600/20 rounded-tr-sm" />
+      </div>
+
+      {/* Decorative corner elements - bottom left */}
+      <div className="absolute bottom-0 left-0 w-20 h-20 overflow-hidden pointer-events-none">
+        <div className="absolute bottom-0 left-0 w-[2px] h-16 bg-gradient-to-t from-yellow-500/70 to-transparent" />
+        <div className="absolute bottom-0 left-0 h-[2px] w-16 bg-gradient-to-r from-yellow-500/70 to-transparent" />
+        <div className="absolute bottom-0 left-0 w-10 h-10 border-b-2 border-l-2 border-yellow-500/30 rounded-bl-sm" />
+        <div className="absolute bottom-3 left-3 w-6 h-6 border-b border-l border-yellow-600/20 rounded-bl-sm" />
+      </div>
+
+      {/* Decorative corner elements - bottom right */}
+      <div className="absolute bottom-0 right-0 w-20 h-20 overflow-hidden pointer-events-none">
+        <div className="absolute bottom-0 right-0 w-[2px] h-16 bg-gradient-to-t from-yellow-500/70 to-transparent" />
+        <div className="absolute bottom-0 right-0 h-[2px] w-16 bg-gradient-to-r from-transparent to-yellow-500/70" />
+        <div className="absolute bottom-0 right-0 w-10 h-10 border-b-2 border-r-2 border-yellow-500/30 rounded-br-sm" />
+        <div className="absolute bottom-3 right-3 w-6 h-6 border-b border-r border-yellow-600/20 rounded-br-sm" />
+      </div>
+    </>
   );
 }

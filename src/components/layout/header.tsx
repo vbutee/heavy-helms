@@ -3,16 +3,16 @@ import { Button } from "@/components/ui/button";
 import Image from "next/image";
 export function Header() {
   return (
-    <header className="w-full flex justify-center ">
-      <div className="flex justify-end fixed top-4 right-4">
+    <header className="w-full flex justify-center py-2">
+      <div className="flex justify-end fixed top-4 right-4 z-10">
         <AuthButton />
       </div>
-      <div className="w-full max-w-[960px]">
+      <div className="w-full max-w-[800px]">
         <Image
           src="/heavy_helms_header_drop_shadow.png"
           alt="Heavy Helms Header"
-          width={960}
-          height={320}
+          width={800}
+          height={266}
           className="w-full opacity-100"
           priority
         />
