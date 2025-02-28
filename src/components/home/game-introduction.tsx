@@ -87,11 +87,11 @@ export function GameIntroduction() {
             transition={{ duration: 0.7 }}
           >
             {/* Placeholder for gameplay images/videos */}
-            {gameSteps.map((step, index) => (
+            {gameSteps.map((step) => (
               <div
-                key={index}
-                className={`absolute inset-0 transition-opacity duration-700 ${
-                  activeStep === index
+                key={`slide-${step.title}`}
+                className={`absolute inset-0 transition-all duration-700 ${
+                  activeStep === gameSteps.indexOf(step)
                     ? "opacity-100"
                     : "opacity-0 pointer-events-none"
                 }`}
@@ -106,12 +106,14 @@ export function GameIntroduction() {
 
             {/* Step title overlay */}
             <div className="absolute bottom-0 left-0 right-0 p-4 z-20">
-              <h3 className="text-2xl font-bold text-yellow-400 mb-1">
-                {gameSteps[activeStep].title}
-              </h3>
-              <p className="text-stone-200 text-sm">
-                {gameSteps[activeStep].description}
-              </p>
+              <div className="min-h-[6rem] flex flex-col justify-end">
+                <h3 className="text-2xl font-bold text-yellow-400 mb-1">
+                  {gameSteps[activeStep].title}
+                </h3>
+                <p className="text-stone-200 text-sm min-h-[2.5rem]">
+                  {gameSteps[activeStep].description}
+                </p>
+              </div>
             </div>
           </motion.div>
 
@@ -123,34 +125,34 @@ export function GameIntroduction() {
             transition={{ duration: 0.7 }}
           >
             <div className="space-y-6">
-              {gameSteps.map((step, index) => (
+              {gameSteps.map((step) => (
                 <motion.div
-                  key={index}
-                  className={`p-4 rounded-md cursor-pointer transition-all ${
-                    activeStep === index
-                      ? "bg-gradient-to-r from-amber-900/30 to-stone-900/70 border border-yellow-600/30"
-                      : "hover:bg-stone-800/50"
+                  key={`step-${step.title}`}
+                  className={`p-4 rounded-md cursor-pointer transition-all duration-300 border ${
+                    activeStep === gameSteps.indexOf(step)
+                      ? "bg-gradient-to-r from-amber-900/30 to-stone-900/70 border-yellow-600/30"
+                      : "border-transparent hover:bg-stone-800/50 hover:border-yellow-600/10"
                   }`}
-                  onClick={() => handleStepClick(index)}
+                  onClick={() => handleStepClick(gameSteps.indexOf(step))}
                   whileHover={{ scale: 1.02 }}
                 >
                   <div className="flex items-start">
                     <div
                       className={`
-                      w-10 h-10 flex items-center justify-center rounded-full text-xl 
+                      w-10 h-10 flex items-center justify-center rounded-full text-xl border transition-all duration-300
                       ${
-                        activeStep === index
-                          ? "bg-yellow-600 text-stone-900"
-                          : "bg-stone-800 text-yellow-400 border border-yellow-600/30"
+                        activeStep === gameSteps.indexOf(step)
+                          ? "bg-yellow-600 text-stone-900 border-transparent"
+                          : "bg-stone-900/40 text-yellow-400 border-yellow-600/30 hover:bg-stone-800/60"
                       }
                     `}
                     >
-                      {index + 1}
+                      {gameSteps.indexOf(step) + 1}
                     </div>
                     <div className="ml-4">
                       <h3
                         className={`font-bold text-lg ${
-                          activeStep === index
+                          activeStep === gameSteps.indexOf(step)
                             ? "text-yellow-400"
                             : "text-stone-200"
                         }`}
@@ -159,7 +161,7 @@ export function GameIntroduction() {
                       </h3>
                       <p
                         className={`${
-                          activeStep === index
+                          activeStep === gameSteps.indexOf(step)
                             ? "text-stone-200"
                             : "text-stone-400"
                         }`}
@@ -174,16 +176,16 @@ export function GameIntroduction() {
 
             {/* Step indicators */}
             <div className="flex justify-center mt-8 space-x-2">
-              {gameSteps.map((_, index) => (
+              {gameSteps.map((step) => (
                 <Button
-                  key={index}
-                  onClick={() => handleStepClick(index)}
+                  key={`indicator-${step.title}`}
+                  onClick={() => handleStepClick(gameSteps.indexOf(step))}
                   className={`w-3 h-3 rounded-full transition-colors ${
-                    activeStep === index
+                    activeStep === gameSteps.indexOf(step)
                       ? "bg-yellow-500"
                       : "bg-stone-700 hover:bg-stone-600"
                   }`}
-                  aria-label={`Go to step ${index + 1}`}
+                  aria-label={`Go to step ${gameSteps.indexOf(step) + 1}`}
                 />
               ))}
             </div>
