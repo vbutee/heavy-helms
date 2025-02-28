@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import CharacterCard from "../CharacterCard";
 import type { Character } from "@/types/player.types";
 import { usePrivy } from "@privy-io/react-auth";
-
+import { CTAButton as CTAButtonComponent } from "../ui/cta-button";
 interface CharacterGalleryProps {
   characters: Character[];
 }
@@ -86,18 +86,11 @@ export function CharacterGallery({ characters }: CharacterGalleryProps) {
 function CTAButton() {
   const { login } = usePrivy();
   return (
-    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
-      <button
-        type="button"
-        onClick={() => login()}
-        className="bg-gradient-to-b from-amber-700/40 to-stone-900/80 backdrop-blur-sm px-8 py-4 rounded border border-yellow-600/30 shadow-lg group relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-r from-yellow-600/0 via-yellow-400/20 to-yellow-600/0 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-        <span className="text-yellow-400/90 text-lg font-bold uppercase tracking-widest group-hover:text-yellow-300 relative z-10">
-          Claim Your Destiny
-        </span>
-      </button>
-    </motion.div>
+    <CTAButtonComponent
+      onClick={() => login()}
+      title="Claim Your Destiny"
+      size="lg"
+    />
   );
 }
 

@@ -10,6 +10,7 @@ import InfoBanner from "@/components/InfoBanner";
 // Import types
 import type { Character } from "@/types/player.types";
 import { CharacterGallery } from "@/components/home/character-gallery";
+import { CommunityStats } from "@/components/home/community-stats";
 
 // Sample character data - will be moved to a service later
 const characters: Character[] = [
@@ -92,6 +93,8 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full overflow-y-auto">
       <CharacterGallery characters={characters} />
+	  <CommunityStats />
+
     </div>
     // <>
     //   {/* Hero section */}
