@@ -33,6 +33,7 @@
     "dependencies": {
         "@privy-io/react-auth": "^2.5.0",
         "@radix-ui/react-slot": "^1.1.2",
+        "@types/webfontloader": "^1.6.38",
         "alchemy-sdk": "^3.5.3",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
@@ -44,7 +45,8 @@
         "react-dom": "^18",
         "tailwind-merge": "^3.0.2",
         "tailwindcss-animate": "^1.0.7",
-        "viem": "^2.23.5"
+        "viem": "^2.23.5",
+        "webfontloader": "^1.6.28"
     },
     "devDependencies": {
         "@biomejs/biome": "1.9.4",

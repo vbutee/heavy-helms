@@ -48,9 +48,9 @@ alwaysApply: false
 │ │ │ ├── constants.ts # Game constants
 │ │ │ └── game-config.ts # Phaser config
 │ │ ├── objects/ # Game objects
-│ │ │ ├── character.ts # Character class
-│ │ │ ├── weapon.ts # Weapon class
-│ │ │ └── combat-effects.ts # Visual effects
+│ │ │ ├── Character.ts # Character class
+│ │ │ ├── Weapon.ts # Weapon class
+│ │ │ └── CombatEffects.ts # Visual effects
 │ │ ├── scenes/ # Game scenes
 │ │ │ ├── boot.ts # Boot scene
 │ │ │ ├── preloader.ts # Preloader scene
