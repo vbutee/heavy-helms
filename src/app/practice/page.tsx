@@ -47,7 +47,7 @@ export default function PracticePage() {
   console.log(player1Id, player2Id);
   return (
     <div className="min-h-screen flex flex-col bg-stone-9000">
-      <header className="p-4 flex justify-between items-center bg-stone-800 border-b border-yellow-600/20 opacity-30">
+      <header className="p-4 flex justify-between items-center bg-stone-800 border-b border-yellow-600/20">
         <h1 className="text-2xl font-bold text-yellow-400">Practice Arena</h1>
         <Button
           variant="outline"
