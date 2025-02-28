@@ -299,7 +299,8 @@ const BattleSelection = React.forwardRef<HTMLElement, BattleSelectionProps>(
         title: "Practice Arena",
         description: "Hone your skills in risk-free battles. Test strategies and fighting styles without consequence.",
         actionLabel: "Enter Practice",
-        route: "/practice"
+        route: "/practice",
+        available: true
       },
       {
         id: "duel",
@@ -307,7 +308,8 @@ const BattleSelection = React.forwardRef<HTMLElement, BattleSelectionProps>(
         title: "Duel Challenge",
         description: "Challenge warriors across the realm. Victory brings glory and rewards - defeat leaves scars.",
         actionLabel: "Find Opponent",
-        route: "/duel"
+        route: "/duel",
+        available: false
       },
       {
         id: "tutorial",
@@ -315,7 +317,8 @@ const BattleSelection = React.forwardRef<HTMLElement, BattleSelectionProps>(
         title: "Warrior Training",
         description: "Learn the ways of combat through guided instruction. Master the basics of Heavy Helms.",
         actionLabel: "Begin Training",
-        route: "/tutorial"
+        route: "/tutorial",
+        available: false
       }
     ];
 
@@ -355,6 +358,7 @@ interface BattleCardProps {
     description: string;
     actionLabel: string;
     route: string;
+    available: boolean;
   };
   selectedCharacter: Character | null;
   hasBattleInView: boolean;
@@ -374,6 +378,11 @@ function BattleCard({
   const router = useRouter();
 
   const handleAction = () => {
+    if (!battleType.available) {
+      alert("This battle mode is coming soon!");
+      return;
+    }
+    
     if (selectedCharacter) {
       router.push(`${battleType.route}?characterId=${selectedCharacter.playerId}`);
     } else {
@@ -397,7 +406,7 @@ function BattleCard({
           ease: "easeOut"
         }
       }}
-      whileHover={selectedCharacter ? { scale: 1.02, borderColor: "rgba(217, 119, 6, 0.4)" } : {}}
+      whileHover={selectedCharacter && (battleType.available) ? { scale: 1.02, borderColor: "rgba(217, 119, 6, 0.4)" } : {}}
     >
       <motion.div 
         className="relative z-10"
@@ -419,17 +428,39 @@ function BattleCard({
         }`}>
           {battleType.description}
         </p>
-        <CTAButton
-          title={battleType.actionLabel}
-          onClick={handleAction}
-          size="default"
-        />
+        {battleType.available ? (
+          <CTAButton
+            title={battleType.actionLabel}
+            onClick={handleAction}
+            size="default"
+          />
+        ) : (
+          <div className="opacity-90 hover:opacity-100 transition-opacity">
+            <CTAButton
+              title="Coming Soon"
+              onClick={handleAction}
+              size="default"
+            />
+          </div>
+        )}
       </motion.div>
       {!selectedCharacter && (
         <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm flex items-center justify-center rounded-lg">
           <div className="text-center p-4">
             <span className="text-yellow-400/80 block mb-2">Select a character first</span>
             <ChevronUp className="h-6 w-6 text-yellow-400/60 mx-auto animate-bounce" />
+          </div>
+        </div>
+      )}
+      {!battleType.available && selectedCharacter && (
+        <div className="absolute inset-0 bg-stone-900/50 backdrop-blur-[1px] flex items-center justify-center rounded-lg z-20">
+          <div className="text-center p-4 max-w-[80%]">
+            <div className="inline-block px-3 py-1 bg-yellow-600/70 text-white rounded-full font-semibold mb-3 tracking-wider text-sm">
+              COMING SOON
+            </div>
+            <p className="text-stone-200 text-sm">
+              This battle mode is under development and will be available in a future update.
+            </p>
           </div>
         </div>
       )}
