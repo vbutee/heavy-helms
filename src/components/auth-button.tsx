@@ -1,10 +1,10 @@
-'use client'
+"use client";
 
-import { usePrivy } from '@privy-io/react-auth'
-import { Button } from './ui/button'
+import { usePrivy } from "@privy-io/react-auth";
+import { Button } from "./ui/button";
 
 function AuthButton() {
-  const { login, logout, authenticated } = usePrivy()
+  const { login, logout, authenticated } = usePrivy();
 
   return authenticated ? (
     <Button
@@ -23,7 +23,7 @@ function AuthButton() {
       {/* <span className="animate-pulse">🔑</span> */}
       Login
     </Button>
-  )
+  );
 }
 
-export default AuthButton 
+export default AuthButton;

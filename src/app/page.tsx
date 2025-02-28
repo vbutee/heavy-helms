@@ -1,21 +1,22 @@
-'use client'
+"use client";
 
-import { usePrivy } from '@privy-io/react-auth'
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
+import { Button } from "@/components/ui/button";
+import { usePrivy } from "@privy-io/react-auth";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
+import InfoBanner from "@/components/InfoBanner";
 // Import types
-import { Character } from '@/types/player.types'
-import InfoBanner from '@/components/InfoBanner'
+import type { Character } from "@/types/player.types";
 
 // Sample character data - will be moved to a service later
 const characters: Character[] = [
   {
     playerId: "10014",
     name: "Ross of the Glade",
-    imageUrl: "https://ipfs.io/ipfs/bafkreici37rg5rtnr4vsnjeprl5e7khjy2dse7y3ahwivxbsnde6o2x3sy",
+    imageUrl:
+      "https://ipfs.io/ipfs/bafkreici37rg5rtnr4vsnjeprl5e7khjy2dse7y3ahwivxbsnde6o2x3sy",
     stance: "defensive",
     weapon: "Sword + Shield",
     armor: "Plate",
@@ -24,12 +25,13 @@ const characters: Character[] = [
     size: 16,
     agility: 13,
     stamina: 7,
-    luck: 7
+    luck: 7,
   },
   {
     playerId: "10009",
     name: "Kate of the Ember",
-    imageUrl: "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW",
+    imageUrl:
+      "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW",
     stance: "balanced",
     weapon: "Mace + Shield",
     armor: "Chain",
@@ -38,43 +40,42 @@ const characters: Character[] = [
     size: 10,
     agility: 14,
     stamina: 14,
-    luck: 8
-  }
-]
+    luck: 8,
+  },
+];
 
 export default function Home() {
-  const { ready, authenticated } = usePrivy()
-  const router = useRouter()
-  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(null)
-  const [opponent, setOpponent] = useState<Character | null>(null)
-  
+  const { ready, authenticated } = usePrivy();
+  const router = useRouter();
+  const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
+    null,
+  );
+  const [opponent, setOpponent] = useState<Character | null>(null);
+
   // Handle character selection
   const handleCharacterSelect = (character: Character) => {
-    setSelectedCharacter(character)
-    
+    setSelectedCharacter(character);
+
     // Set opponent to the other character
-    const otherCharacter = characters.find(c => c.playerId !== character.playerId)
+    const otherCharacter = characters.find(
+      (c) => c.playerId !== character.playerId,
+    );
     if (otherCharacter) {
-      setOpponent(otherCharacter)
+      setOpponent(otherCharacter);
     }
-  }
-  
+  };
+
   // Start game with selected characters
   const startGame = () => {
     if (selectedCharacter && opponent) {
-      router.push(`/game?player1Id=${selectedCharacter.playerId}&player2Id=${opponent.playerId}`)
+      router.push(
+        `/game?player1Id=${selectedCharacter.playerId}&player2Id=${opponent.playerId}`,
+      );
     }
-  }
-  
+  };
+
   return (
-    <div className="min-h-screen w-full overflow-y-auto">
-      
-
-      {/* Content */}
-
-
-    
-    </div>
+    <div className="min-h-screen w-full overflow-y-auto">{/* Content */}</div>
     // <>
     //   {/* Hero section */}
     //   <section className="relative flex flex-1 items-center justify-center">
@@ -91,7 +92,7 @@ export default function Home() {
     //       </div>
     //     </div>
     //   </section>
-      
+
     //   {/* Main content area */}
     //   <section className="py-20 flex justify-center">
     //     <div className="container mx-auto px-4">
@@ -104,7 +105,7 @@ export default function Home() {
     //           </p>
     //           <Button className="w-full">Enter Practice</Button>
     //         </div>
-            
+
     //         <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-700">
     //           <h2 className="text-2xl font-bold mb-4">Duel Mode</h2>
     //           <p className="text-slate-300 mb-4">
@@ -112,7 +113,7 @@ export default function Home() {
     //           </p>
     //           <Button className="w-full">Find Match</Button>
     //         </div>
-            
+
     //         <div className="bg-slate-800/50 backdrop-blur-sm rounded-lg p-6 border border-slate-700">
     //           <h2 className="text-2xl font-bold mb-4">Your NFTs</h2>
     //           <p className="text-slate-300 mb-4">
@@ -124,5 +125,5 @@ export default function Home() {
     //     </div>
     //   </section>
     // </>
-  )
-} 
+  );
+}

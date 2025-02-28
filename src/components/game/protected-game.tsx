@@ -1,28 +1,28 @@
-'use client'
+"use client";
 
-import { usePrivy } from '@privy-io/react-auth'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import dynamic from 'next/dynamic'
+import { usePrivy } from "@privy-io/react-auth";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 // Import the App component without SSR
-const AppWithoutSSR = dynamic(() => import('@/App'), { ssr: false })
+const AppWithoutSSR = dynamic(() => import("@/App"), { ssr: false });
 
 interface ProtectedGameProps {
-  player1Id?: string | null
-  player2Id?: string | null
+  player1Id?: string | null;
+  player2Id?: string | null;
 }
 
 function ProtectedGame({ player1Id, player2Id }: ProtectedGameProps) {
-  const { ready, authenticated, logout } = usePrivy()
-  const router = useRouter()
+  const { ready, authenticated, logout } = usePrivy();
+  const router = useRouter();
 
   // Redirect to home if not authenticated
   useEffect(() => {
     if (ready && !authenticated) {
-      router.push('/')
+      router.push("/");
     }
-  }, [ready, authenticated, router])
+  }, [ready, authenticated, router]);
 
   // Show loading state while checking authentication
   if (!ready || !authenticated) {
@@ -33,27 +33,30 @@ function ProtectedGame({ player1Id, player2Id }: ProtectedGameProps) {
           <p className="text-amber-400 text-lg">Loading game...</p>
         </div>
       </div>
-    )
+    );
   }
 
   // Handle logout
   const handleLogout = async () => {
-    await logout()
-    router.push('/')
-  }
+    await logout();
+    router.push("/");
+  };
 
   // Show the game if authenticated
   return (
     <div className="relative w-full h-full">
-      <button 
+      <button
         className="absolute top-4 right-4 z-50 bg-amber-800 hover:bg-amber-700 text-white px-4 py-2 rounded-md transition-colors"
         onClick={handleLogout}
       >
         Logout
       </button>
-      <AppWithoutSSR player1Id={player1Id || undefined} player2Id={player2Id || undefined} />
+      <AppWithoutSSR
+        player1Id={player1Id || undefined}
+        player2Id={player2Id || undefined}
+      />
     </div>
-  )
+  );
 }
 
-export default ProtectedGame 
+export default ProtectedGame;

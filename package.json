@@ -25,7 +25,10 @@
         "dev": "node log.js dev & next dev -p 8080",
         "build": "node log.js build & next build",
         "dev-nolog": "next dev -p 8080",
-        "build-nolog": "next build"
+        "build-nolog": "next build",
+        "lint": "pnpm biome lint --write ./src",
+        "format": "pnpm biome format --write ./src",
+        "format:fix": "pnpm biome check --write ./src"
     },
     "dependencies": {
         "@privy-io/react-auth": "^2.5.0",
@@ -41,6 +44,7 @@
         "tailwindcss-animate": "^1.0.7"
     },
     "devDependencies": {
+        "@biomejs/biome": "1.9.4",
         "@tailwindcss/postcss": "^4.0.9",
         "@types/node": "^20",
         "@types/react": "^18",
