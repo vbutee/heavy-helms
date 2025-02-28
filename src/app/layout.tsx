@@ -1,12 +1,18 @@
 import "@/styles/globals.css";
-import AuthButton from "@/components/auth-button";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
 import Providers from "@/providers";
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import localFont from "next/font/local";
 import Image from "next/image";
-const inter = Inter({ subsets: ["latin"] });
+
+// Load Bokor font from the public directory
+const bokor = localFont({
+  src: "../../public/fonts/Bokor-Regular.ttf",
+  weight: "400",
+  display: "swap",
+  variable: "--font-bokor",
+});
 
 export const metadata: Metadata = {
   title: "Heavy Helms",
@@ -20,7 +26,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} min-h-screen flex flex-col`}>
+      <body className={`${bokor.className} min-h-screen flex flex-col`}>
         {/* Background with reduced opacity */}
         <div className="fixed inset-0 z-0">
           <Image

@@ -4,7 +4,7 @@ import Image from "next/image";
 export function Header() {
   return (
     <header className="w-full flex justify-center ">
-      <div>
+      <div className="flex justify-end fixed top-4 right-4">
         <AuthButton />
       </div>
       <div className="w-full max-w-[960px]">

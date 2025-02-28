@@ -9,6 +9,7 @@ import { useEffect, useState } from "react";
 import InfoBanner from "@/components/InfoBanner";
 // Import types
 import type { Character } from "@/types/player.types";
+import { CharacterGallery } from "@/components/home/character-gallery";
 
 // Sample character data - will be moved to a service later
 const characters: Character[] = [
@@ -33,17 +34,31 @@ const characters: Character[] = [
     imageUrl:
       "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW",
     stance: "balanced",
-    weapon: "Mace + Shield",
-    armor: "Chain",
-    strength: 14,
+    weapon: "Quarterstaff",
+    armor: "Cloth",
+    strength: 16,
     constitution: 12,
-    size: 10,
-    agility: 14,
-    stamina: 14,
-    luck: 8,
+    size: 9,
+    agility: 10,
+    stamina: 16,
+    luck: 9,
+  },
+  {
+    playerId: "10031",
+    name: "Diego Frostcaller",
+    imageUrl:
+      "https://ipfs.io/ipfs/QmZqrNGPB2ck2ECdhKZEFaJyVM1YtNDLrhmWN5CxvZTqr5",
+    stance: "offensive",
+    weapon: "Battleaxe",
+    armor: "Leather",
+    strength: 16,
+    constitution: 11,
+    size: 13,
+    agility: 9,
+    stamina: 10,
+    luck: 13,
   },
 ];
-
 export default function Home() {
   const { ready, authenticated } = usePrivy();
   const router = useRouter();
@@ -75,7 +90,9 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen w-full overflow-y-auto">{/* Content */}</div>
+    <div className="min-h-screen w-full overflow-y-auto">
+      <CharacterGallery characters={characters} />
+    </div>
     // <>
     //   {/* Hero section */}
     //   <section className="relative flex flex-1 items-center justify-center">
@@ -92,7 +109,6 @@ export default function Home() {
     //       </div>
     //     </div>
     //   </section>
-
     //   {/* Main content area */}
     //   <section className="py-20 flex justify-center">
     //     <div className="container mx-auto px-4">

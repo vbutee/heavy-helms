@@ -11,7 +11,8 @@ export type Weapon =
   | "Battleaxe"
   | "Mace + Shield"
   | "Spear"
-  | "Warhammer";
+  | "Warhammer"
+  | "Quarterstaff";
 
 /**
  * Character armor type

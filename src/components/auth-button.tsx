@@ -18,7 +18,7 @@ function AuthButton() {
     <Button
       onClick={() => login()}
       size="lg"
-      className="z-50 bg-gradient-to-r from-amber-500 to-amber-700 text-white px-24 py-3 rounded-xl shadow-lg transform hover:scale-110 transition-all duration-300 font-bold flex justify-center items-center space-x-2"
+      className="z-50 bg-gradient-to-r from-amber-500 to-amber-700 text-white px-6 py-3 rounded-xl shadow-lg transform hover:scale-110 transition-all duration-300 font-bold flex justify-center items-center space-x-2"
     >
       {/* <span className="animate-pulse">🔑</span> */}
       Login
