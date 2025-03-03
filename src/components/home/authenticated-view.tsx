@@ -6,9 +6,22 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/types/player.types";
 import { CTAButton } from "../ui/cta-button";
-import { useState, useRef, forwardRef } from "react";
+import { useState, useRef, forwardRef, useEffect } from "react";
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { useAccount } from "wagmi";
+import { parseEther } from "viem";
+import { PlayerABI } from "@/game/abi/PlayerABI.abi";
+import { toast } from "sonner";
+import { PlusIcon } from "lucide-react";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useReadContract,
+} from "wagmi";
+import { encodeFunctionData } from "viem";
+import { useWallet } from "@/hooks/use-wallet";
 
 interface AuthenticatedViewProps {
   characters: Character[];
@@ -16,11 +29,17 @@ interface AuthenticatedViewProps {
 
 export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
   const router = useRouter();
+  const { user, authenticated, ready } = usePrivy();
+  const { wallets } = useWallets();
+  const { currentChainId, isWrongNetwork, switchToBaseSepolia } = useWallet();
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
+  const [isCreatingCharacter, setIsCreatingCharacter] = useState(false);
+  const [txHash, setTxHash] = useState<string | null>(null);
   const battleSectionRef = useRef<HTMLElement>(null);
   const [hasBattleInView, setHasBattleInView] = useState(false);
+  const { address } = useAccount();
 
   // Function to select a character
   const handleSelectCharacter = (character: Character) => {
@@ -44,6 +63,199 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
     setHasBattleInView(false);
   };
 
+  // Setup contract write function for creating a player using Wagmi v2
+  const {
+    writeContract,
+    data: createTxHash,
+    isPending: isWritePending,
+    error: writeError,
+  } = useWriteContract();
+
+  // Monitor transaction completion with Wagmi v2
+  const {
+    isLoading: isConfirming,
+    isSuccess: isConfirmed,
+    error: confirmError,
+  } = useWaitForTransactionReceipt({
+    hash: createTxHash,
+  });
+
+  // Listen for new player creation events
+  useReadContract({
+    address: process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS as `0x${string}`,
+    abi: PlayerABI,
+    query: {
+      enabled: isConfirmed,
+      select: (data) => {
+        // After successful transaction, trigger a refresh of character list
+        // This is a placeholder - you might want to implement a proper refresh mechanism
+        return data;
+      },
+    },
+  });
+
+  // Watch for transaction processing status changes
+  useEffect(() => {
+    if (isConfirmed) {
+      toast("Character creation successful", {
+        description: "Your new character will appear shortly.",
+      });
+      setIsCreatingCharacter(false);
+    } else if (confirmError) {
+      toast("Character creation failed", {
+        description: confirmError.message,
+        style: { backgroundColor: "rgb(239, 68, 68)", color: "white" },
+      });
+      setIsCreatingCharacter(false);
+    }
+  }, [isConfirmed, confirmError]);
+
+  // Handle write contract errors
+  useEffect(() => {
+    if (writeError) {
+      toast("Error", {
+        description: writeError.message,
+        style: { backgroundColor: "rgb(239, 68, 68)", color: "white" },
+      });
+      setIsCreatingCharacter(false);
+    }
+  }, [writeError]);
+
+  // Handle new character creation
+  const handleCreateCharacter = async () => {
+    if (!authenticated || !user?.wallet) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
+
+    if (isWrongNetwork) {
+      toast("Wrong Network", {
+        description: "Please switch to Base Sepolia to create a character",
+      });
+      await switchToBaseSepolia();
+      return;
+    }
+
+    try {
+      setIsCreatingCharacter(true);
+      setTxHash(null);
+
+      // Show initial toast
+      toast("Creating character", {
+        description: "Preparing transaction...",
+      });
+
+      // Get contract address from environment variable
+      const playerContractAddress =
+        process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS;
+
+      if (!playerContractAddress) {
+        throw new Error("Player contract address not configured");
+      }
+
+      // Prepare transaction data
+      const data = encodeFunctionData({
+        abi: PlayerABI,
+        functionName: "requestCreatePlayer",
+        args: [false], // useNameSetB = false (use name set A)
+      });
+
+      // Get wallet provider
+      if (!wallets || wallets.length === 0) {
+        throw new Error("No wallet available");
+      }
+
+      const wallet = wallets[0]; // Get the first wallet
+      const provider = await wallet.getEthereumProvider();
+
+      // Send transaction using the provider
+      const txHash = await provider.request({
+        method: "eth_sendTransaction",
+        params: [
+          {
+            to: playerContractAddress,
+            from: wallet.address,
+            data,
+            value: `0x${parseEther("0.001").toString(16)}`, // 0.1 ETH creation fee in hex
+          },
+        ],
+      });
+
+      // Update tx hash
+      setTxHash(txHash as string);
+
+      // Show pending toast
+      toast("Transaction sent", {
+        description: "Waiting for confirmation...",
+      });
+
+      // Check for transaction receipt
+      let receipt = null;
+      let retries = 0;
+      const maxRetries = 30; // Try for ~5 minutes
+
+      while (!receipt && retries < maxRetries) {
+        try {
+          // Wait before checking
+          await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
+
+          // Get transaction receipt
+          const receiptResponse = await provider.request({
+            method: "eth_getTransactionReceipt",
+            params: [txHash],
+          });
+
+          if (receiptResponse) {
+            receipt = receiptResponse;
+          }
+        } catch (receiptError) {
+          console.error("Error checking receipt:", receiptError);
+        }
+
+        retries++;
+      }
+
+      if (receipt && receipt.status === "0x1") {
+        toast.success("Character created!", {
+          description: (
+            <div className="mt-2 text-xs">
+              <p>Your new character has been created successfully.</p>
+              <a
+                href={`https://sepolia.basescan.org/tx/${txHash}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 hover:text-blue-300 underline mt-1 inline-block"
+              >
+                View transaction
+              </a>
+            </div>
+          ),
+          duration: 5000,
+        });
+
+        // Delay to allow time for the contract to emit events and update state
+        setTimeout(() => {
+          // Trigger a refresh - You'll need to implement this function
+          // to refresh the characters list
+          window.location.reload();
+        }, 2000);
+      } else {
+        throw new Error("Transaction failed");
+      }
+    } catch (error: unknown) {
+      console.error("Error creating character:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again.";
+      toast.error("Failed to create character", {
+        description: errorMessage,
+      });
+    } finally {
+      setIsCreatingCharacter(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto">
       <WarriorSelection
@@ -51,7 +263,12 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
         selectedCharacter={selectedCharacter}
         onSelectCharacter={handleSelectCharacter}
         onDeselectCharacter={handleDeselectCharacter}
+        onCreateCharacter={handleCreateCharacter}
+        isCreatingCharacter={
+          isCreatingCharacter || isWritePending || isConfirming
+        }
         battleSectionRef={battleSectionRef}
+        txHash={txHash}
       />
 
       <BattleSelection
@@ -72,7 +289,10 @@ interface WarriorSelectionProps {
   selectedCharacter: Character | null;
   onSelectCharacter: (character: Character) => void;
   onDeselectCharacter: () => void;
+  onCreateCharacter: () => void;
+  isCreatingCharacter: boolean;
   battleSectionRef: React.RefObject<HTMLElement>;
+  txHash: string | null;
 }
 
 function WarriorSelection({
@@ -80,7 +300,10 @@ function WarriorSelection({
   selectedCharacter,
   onSelectCharacter,
   onDeselectCharacter,
+  onCreateCharacter,
+  isCreatingCharacter,
   battleSectionRef,
+  txHash,
 }: WarriorSelectionProps) {
   const router = useRouter();
 
@@ -91,27 +314,25 @@ function WarriorSelection({
       {/* Character Carousel */}
       <div className="relative overflow-hidden">
         <div className="flex gap-6 px-4 overflow-x-auto pb-4 snap-x">
-          {characters.map((character, index) => {
-            const idx = character.playerId + index;
-            const selectedCharIdx = selectedCharacter?.playerId || 1 + index;
-            return (
-              <CharacterCard
-                key={idx}
-                character={character}
-                index={index}
-                isSelected={selectedCharIdx === idx}
-                onSelect={() => onSelectCharacter(character)}
-                onDeselect={onDeselectCharacter}
-                onViewDetails={() =>
-                  router.push(`/character/${character.playerId}`)
-                }
-              />
-            );
-          })}
+          {characters.map((character, index) => (
+            <CharacterCard
+              key={character.playerId}
+              character={character}
+              index={index}
+              isSelected={selectedCharacter?.playerId === character.playerId}
+              onSelect={() => onSelectCharacter(character)}
+              onDeselect={onDeselectCharacter}
+              onViewDetails={() =>
+                router.push(`/character/${character.playerId}`)
+              }
+            />
+          ))}
 
           <NewCharacterCard
-            delay={characters.length * 0.1}
-            onClick={() => router.push("/character/create")}
+            delay={characters.length + 1}
+            onClick={onCreateCharacter}
+            isCreating={isCreatingCharacter}
+            txHash={txHash}
           />
         </div>
       </div>
@@ -269,31 +490,61 @@ function CharacterCard({
 interface NewCharacterCardProps {
   delay: number;
   onClick: () => void;
+  isCreating: boolean;
+  txHash: string | null;
 }
 
-function NewCharacterCard({ delay, onClick }: NewCharacterCardProps) {
+function NewCharacterCard({
+  delay,
+  onClick,
+  isCreating,
+  txHash,
+}: NewCharacterCardProps) {
   return (
     <motion.div
-      className="min-w-[220px] h-[300px] bg-gradient-to-b from-stone-800/20 to-stone-900/40 rounded-lg border border-yellow-600/10 overflow-hidden snap-start flex flex-col items-center justify-center"
+      className={`relative rounded-lg overflow-hidden border-2 border-dashed border-yellow-700/40 bg-gradient-to-b from-black/30 to-black/10 flex flex-col justify-center items-center p-5 h-[320px] cursor-pointer transition-colors hover:bg-black/20 hover:border-yellow-700/60 ${
+        isCreating ? "pointer-events-none" : ""
+      }`}
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay }}
-      whileHover={{
-        scale: 1.02,
-        borderColor: "rgba(217, 119, 6, 0.3)",
-      }}
+      transition={{ duration: 0.5, delay: delay * 0.1 }}
+      onClick={isCreating ? undefined : onClick}
     >
-      <div className="w-20 h-20 rounded-full border-2 border-dashed border-yellow-600/30 flex items-center justify-center mb-4">
-        <span className="text-3xl text-yellow-600/70">+</span>
-      </div>
-      <p className="text-stone-300 mb-4">Create New Warrior</p>
-      <Button
-        variant="outline"
-        className="border-yellow-600/30 text-yellow-400 hover:bg-yellow-600/10"
-        onClick={onClick}
-      >
-        Forge Legend
-      </Button>
+      {isCreating ? (
+        <div className="flex flex-col items-center justify-center space-y-4 text-center">
+          <div className="relative w-16 h-16">
+            <div className="absolute inset-0 rounded-full border-t-2 border-yellow-500 animate-spin" />
+            <div className="absolute inset-2 rounded-full border-t-2 border-yellow-300 animate-spin-slow" />
+          </div>
+          <p className="text-yellow-400 font-medium mt-2 text-center">
+            {txHash ? "Creating character..." : "Confirming transaction..."}
+          </p>
+          {txHash && (
+            <a
+              href={`https://sepolia.basescan.org/tx/${txHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-400 hover:text-blue-300 underline mt-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              View in explorer
+            </a>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="rounded-full bg-yellow-800/20 p-3">
+            <PlusIcon className="h-10 w-10 text-yellow-600" strokeWidth={1.5} />
+          </div>
+          <h3 className="mt-4 text-lg font-medium text-yellow-500">
+            Create New Character
+          </h3>
+          <p className="mt-1 text-sm text-center text-zinc-400">
+            Create a new character to join the battle.
+          </p>
+          <div className="mt-4 text-xs text-zinc-500">0.001 ETH</div>
+        </>
+      )}
     </motion.div>
   );
 }

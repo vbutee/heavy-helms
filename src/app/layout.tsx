@@ -1,4 +1,3 @@
-
 import "@/styles/globals.css";
 import { Footer } from "@/components/layout/footer";
 import { Header } from "@/components/layout/header";
@@ -6,6 +5,7 @@ import Providers from "@/providers";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import Image from "next/image";
+import { Toaster } from "sonner";
 
 // Load Bokor font from the public directory
 const bokor = localFont({
@@ -42,6 +42,7 @@ export default function RootLayout({
           <div className="flex flex-col from-slate-900 to-indigo-900">
             <Header />
             <main className="flex flex-col flex-1">{children}</main>
+            <Toaster />
             <Footer />
           </div>
         </Providers>
