@@ -28,7 +28,7 @@ export const CHAIN_NAMES: Record<string, string> = {
 };
 
 interface WalletContextType {
-  currentChainId: number | null;
+  currentChainId: string | null;
   isWrongNetwork: boolean;
   checking: boolean;
   hasWallet: boolean;
@@ -93,9 +93,11 @@ export function WalletProvider({ children }: { children: ReactNode }) {
       toast("Network switched", {
         description: "Successfully connected to Base Sepolia",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to switch networks";
       toast("Network switch failed", {
-        description: error.message || "Failed to switch networks",
+        description: errorMessage,
         style: { backgroundColor: "rgb(239, 68, 68)", color: "white" },
       });
     }
@@ -103,7 +105,7 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   // Calculate derived state
   const isWrongNetwork =
-    currentChainId !== null && currentChainId !== 'eip155:84532';
+    currentChainId !== null && currentChainId !== "eip155:84532";
   console.log({ currentChainId, baseSepoliaId: baseSepolia.id });
   const hasWallet = Boolean(wallets && wallets.length > 0);
   const currentChainName = getChainName(currentChainId);

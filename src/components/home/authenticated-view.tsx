@@ -6,279 +6,84 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import type { Character } from "@/types/player.types";
 import { CTAButton } from "../ui/cta-button";
-import { useState, useRef, forwardRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import React from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useAccount } from "wagmi";
-import { parseEther } from "viem";
-import { PlayerABI } from "@/game/abi/PlayerABI.abi";
-import { toast } from "sonner";
 import { PlusIcon } from "lucide-react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
-import {
-  useWriteContract,
-  useWaitForTransactionReceipt,
-  useReadContract,
-} from "wagmi";
-import { encodeFunctionData } from "viem";
-import { useWallet } from "@/hooks/use-wallet";
+import { BattleSection } from "../battle/battle-section";
+import { useInView } from "react-intersection-observer";
+import { PlayerProvider } from "@/store/player-context";
+import { WarriorSelection } from "../character/warrior-selection";
 
 interface AuthenticatedViewProps {
   characters: Character[];
 }
 
 export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
-  const router = useRouter();
-  const { user, authenticated, ready } = usePrivy();
-  const { wallets } = useWallets();
-  const { currentChainId, isWrongNetwork, switchToBaseSepolia } = useWallet();
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
-  const [isCreatingCharacter, setIsCreatingCharacter] = useState(false);
-  const [txHash, setTxHash] = useState<string | null>(null);
   const battleSectionRef = useRef<HTMLElement>(null);
+  const { ref: inViewRef, inView } = useInView({
+    threshold: 0.1,
+  });
   const [hasBattleInView, setHasBattleInView] = useState(false);
-  const { address } = useAccount();
+
+  // Update hasBattleInView state when inView changes
+  useEffect(() => {
+    setHasBattleInView(inView);
+  }, [inView]);
 
   // Function to select a character
   const handleSelectCharacter = (character: Character) => {
     setSelectedCharacter(character);
-    // Scroll to battle section after a short delay
+
+    // Add a small delay to allow the UI to update before scrolling
     setTimeout(() => {
-      battleSectionRef.current?.scrollIntoView({
-        behavior: "smooth",
-        block: "start",
-      });
-      // Set battle in view after animation completes
-      setTimeout(() => {
-        setHasBattleInView(true);
-      }, 500);
+      scrollToBattleSection();
     }, 300);
   };
 
-  // Reset battle view state when character is deselected
+  // Function to deselect a character
   const handleDeselectCharacter = () => {
     setSelectedCharacter(null);
-    setHasBattleInView(false);
   };
 
-  // Setup contract write function for creating a player using Wagmi v2
-  const {
-    writeContract,
-    data: createTxHash,
-    isPending: isWritePending,
-    error: writeError,
-  } = useWriteContract();
-
-  // Monitor transaction completion with Wagmi v2
-  const {
-    isLoading: isConfirming,
-    isSuccess: isConfirmed,
-    error: confirmError,
-  } = useWaitForTransactionReceipt({
-    hash: createTxHash,
-  });
-
-  // Listen for new player creation events
-  useReadContract({
-    address: process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS as `0x${string}`,
-    abi: PlayerABI,
-    query: {
-      enabled: isConfirmed,
-      select: (data) => {
-        // After successful transaction, trigger a refresh of character list
-        // This is a placeholder - you might want to implement a proper refresh mechanism
-        return data;
-      },
-    },
-  });
-
-  // Watch for transaction processing status changes
-  useEffect(() => {
-    if (isConfirmed) {
-      toast("Character creation successful", {
-        description: "Your new character will appear shortly.",
-      });
-      setIsCreatingCharacter(false);
-    } else if (confirmError) {
-      toast("Character creation failed", {
-        description: confirmError.message,
-        style: { backgroundColor: "rgb(239, 68, 68)", color: "white" },
-      });
-      setIsCreatingCharacter(false);
-    }
-  }, [isConfirmed, confirmError]);
-
-  // Handle write contract errors
-  useEffect(() => {
-    if (writeError) {
-      toast("Error", {
-        description: writeError.message,
-        style: { backgroundColor: "rgb(239, 68, 68)", color: "white" },
-      });
-      setIsCreatingCharacter(false);
-    }
-  }, [writeError]);
-
-  // Handle new character creation
-  const handleCreateCharacter = async () => {
-    if (!authenticated || !user?.wallet) {
-      toast.error("Please connect your wallet first");
-      return;
-    }
-
-    if (isWrongNetwork) {
-      toast("Wrong Network", {
-        description: "Please switch to Base Sepolia to create a character",
-      });
-      await switchToBaseSepolia();
-      return;
-    }
-
-    try {
-      setIsCreatingCharacter(true);
-      setTxHash(null);
-
-      // Show initial toast
-      toast("Creating character", {
-        description: "Preparing transaction...",
-      });
-
-      // Get contract address from environment variable
-      const playerContractAddress =
-        process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS;
-
-      if (!playerContractAddress) {
-        throw new Error("Player contract address not configured");
-      }
-
-      // Prepare transaction data
-      const data = encodeFunctionData({
-        abi: PlayerABI,
-        functionName: "requestCreatePlayer",
-        args: [false], // useNameSetB = false (use name set A)
-      });
-
-      // Get wallet provider
-      if (!wallets || wallets.length === 0) {
-        throw new Error("No wallet available");
-      }
-
-      const wallet = wallets[0]; // Get the first wallet
-      const provider = await wallet.getEthereumProvider();
-
-      // Send transaction using the provider
-      const txHash = await provider.request({
-        method: "eth_sendTransaction",
-        params: [
-          {
-            to: playerContractAddress,
-            from: wallet.address,
-            data,
-            value: `0x${parseEther("0.001").toString(16)}`, // 0.1 ETH creation fee in hex
-          },
-        ],
-      });
-
-      // Update tx hash
-      setTxHash(txHash as string);
-
-      // Show pending toast
-      toast("Transaction sent", {
-        description: "Waiting for confirmation...",
-      });
-
-      // Check for transaction receipt
-      let receipt = null;
-      let retries = 0;
-      const maxRetries = 30; // Try for ~5 minutes
-
-      while (!receipt && retries < maxRetries) {
-        try {
-          // Wait before checking
-          await new Promise((resolve) => setTimeout(resolve, 10000)); // 10 seconds
-
-          // Get transaction receipt
-          const receiptResponse = await provider.request({
-            method: "eth_getTransactionReceipt",
-            params: [txHash],
-          });
-
-          if (receiptResponse) {
-            receipt = receiptResponse;
-          }
-        } catch (receiptError) {
-          console.error("Error checking receipt:", receiptError);
-        }
-
-        retries++;
-      }
-
-      if (receipt && receipt.status === "0x1") {
-        toast.success("Character created!", {
-          description: (
-            <div className="mt-2 text-xs">
-              <p>Your new character has been created successfully.</p>
-              <a
-                href={`https://sepolia.basescan.org/tx/${txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 hover:text-blue-300 underline mt-1 inline-block"
-              >
-                View transaction
-              </a>
-            </div>
-          ),
-          duration: 5000,
-        });
-
-        // Delay to allow time for the contract to emit events and update state
-        setTimeout(() => {
-          // Trigger a refresh - You'll need to implement this function
-          // to refresh the characters list
-          window.location.reload();
-        }, 2000);
-      } else {
-        throw new Error("Transaction failed");
-      }
-    } catch (error: unknown) {
-      console.error("Error creating character:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Something went wrong. Please try again.";
-      toast.error("Failed to create character", {
-        description: errorMessage,
-      });
-    } finally {
-      setIsCreatingCharacter(false);
-    }
+  // Function to scroll to battle section
+  const scrollToBattleSection = () => {
+    battleSectionRef.current?.scrollIntoView({ behavior: "smooth" });
   };
+
+  // Set up the ref for the battle section
+  useEffect(() => {
+    if (battleSectionRef.current) {
+      inViewRef(battleSectionRef.current);
+    }
+  }, [inViewRef]);
 
   return (
-    <div className="max-w-7xl mx-auto">
-      <WarriorSelection
-        characters={characters}
-        selectedCharacter={selectedCharacter}
-        onSelectCharacter={handleSelectCharacter}
-        onDeselectCharacter={handleDeselectCharacter}
-        onCreateCharacter={handleCreateCharacter}
-        isCreatingCharacter={
-          isCreatingCharacter || isWritePending || isConfirming
-        }
-        battleSectionRef={battleSectionRef}
-        txHash={txHash}
-      />
+    <PlayerProvider initialCharacters={characters}>
+      <div className="max-w-7xl mx-auto">
+        <WarriorSelection
+          selectedCharacter={selectedCharacter}
+          onSelectCharacter={handleSelectCharacter}
+          onDeselectCharacter={handleDeselectCharacter}
+          characters={characters}
+        />
 
-      <BattleSelection
-        ref={battleSectionRef}
-        selectedCharacter={selectedCharacter}
-        hasBattleInView={hasBattleInView}
-      />
+        {/* Scroll indicator - only show when a character is selected and battle section is not in view */}
+        {selectedCharacter && !hasBattleInView && (
+          <ScrollIndicator onClick={scrollToBattleSection} />
+        )}
 
+        <BattleSection
+          selectedCharacter={selectedCharacter}
+          hasBattleInView={hasBattleInView}
+          battleSectionRef={battleSectionRef}
+        />
+      </div>
       <RecentActivity />
-    </div>
+    </PlayerProvider>
   );
 }
 
@@ -289,64 +94,7 @@ interface WarriorSelectionProps {
   selectedCharacter: Character | null;
   onSelectCharacter: (character: Character) => void;
   onDeselectCharacter: () => void;
-  onCreateCharacter: () => void;
-  isCreatingCharacter: boolean;
   battleSectionRef: React.RefObject<HTMLElement>;
-  txHash: string | null;
-}
-
-function WarriorSelection({
-  characters,
-  selectedCharacter,
-  onSelectCharacter,
-  onDeselectCharacter,
-  onCreateCharacter,
-  isCreatingCharacter,
-  battleSectionRef,
-  txHash,
-}: WarriorSelectionProps) {
-  const router = useRouter();
-
-  return (
-    <section className="mb-12">
-      <SectionHeader title="Your Warriors" subtitle="CHOOSE YOUR CHAMPION" />
-
-      {/* Character Carousel */}
-      <div className="relative overflow-hidden">
-        <div className="flex gap-6 px-4 overflow-x-auto pb-4 snap-x">
-          {characters.map((character, index) => (
-            <CharacterCard
-              key={character.playerId}
-              character={character}
-              index={index}
-              isSelected={selectedCharacter?.playerId === character.playerId}
-              onSelect={() => onSelectCharacter(character)}
-              onDeselect={onDeselectCharacter}
-              onViewDetails={() =>
-                router.push(`/character/${character.playerId}`)
-              }
-            />
-          ))}
-
-          <NewCharacterCard
-            delay={characters.length + 1}
-            onClick={onCreateCharacter}
-            isCreating={isCreatingCharacter}
-            txHash={txHash}
-          />
-        </div>
-      </div>
-
-      {/* Scroll indicator if character is selected */}
-      {selectedCharacter && (
-        <ScrollIndicator
-          onClick={() =>
-            battleSectionRef.current?.scrollIntoView({ behavior: "smooth" })
-          }
-        />
-      )}
-    </section>
-  );
 }
 
 interface CharacterCardProps {
@@ -366,6 +114,8 @@ function CharacterCard({
   onDeselect,
   onViewDetails,
 }: CharacterCardProps) {
+  const router = useRouter();
+
   return (
     <motion.div
       className={`min-w-[220px] bg-gradient-to-b from-amber-900/20 to-stone-900/40 rounded-lg ${
@@ -545,33 +295,6 @@ function NewCharacterCard({
           <div className="mt-4 text-xs text-zinc-500">0.001 ETH</div>
         </>
       )}
-    </motion.div>
-  );
-}
-
-interface ScrollIndicatorProps {
-  onClick: () => void;
-}
-
-function ScrollIndicator({ onClick }: ScrollIndicatorProps) {
-  return (
-    <motion.div
-      className="flex justify-center mt-6"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <button
-        className="flex flex-col items-center group focus:outline-none focus:ring-2 focus:ring-yellow-500/40 rounded-md px-3 py-1"
-        onClick={onClick}
-        aria-label="Scroll to battle section"
-        type="button"
-      >
-        <span className="text-yellow-400/70 text-sm mb-1 group-hover:text-yellow-400">
-          Choose your battle below
-        </span>
-        <ChevronDown className="h-5 w-5 text-yellow-500/70 animate-bounce group-hover:text-yellow-500" />
-      </button>
     </motion.div>
   );
 }
@@ -799,6 +522,7 @@ function RecentActivity() {
     <section className="mb-8">
       <SectionHeader title="Battle Chronicles" subtitle="YOUR SAGA" />
 
+      {/* Activity Feed - Placeholder for now */}
       <motion.div
         className="bg-gradient-to-b from-amber-900/5 to-stone-900/30 rounded-lg border border-yellow-600/10 p-6"
         initial={{ opacity: 0 }}
@@ -910,5 +634,30 @@ function SectionHeader({
         </div>
       </motion.div>
     </div>
+  );
+}
+
+// The ScrollIndicator component - can stay here since it's specific to this view
+interface ScrollIndicatorProps {
+  onClick: () => void;
+}
+
+function ScrollIndicator({ onClick }: ScrollIndicatorProps) {
+  return (
+    <motion.div
+      className="fixed bottom-8 left-0 right-0 z-50 flex justify-center items-center"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: 20 }}
+    >
+      <motion.button
+        className="bg-yellow-500/10 backdrop-blur-sm border border-yellow-500/20 text-yellow-500 px-4 py-2 rounded-full flex items-center gap-2 hover:bg-yellow-500/20 transition-all"
+        onClick={onClick}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+      >
+        View Battle Options <ChevronDown className="h-4 w-4" />
+      </motion.button>
+    </motion.div>
   );
 }

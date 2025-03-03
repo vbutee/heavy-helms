@@ -5,7 +5,7 @@ import { ChainSelection } from "./chain-selection";
 export function Header() {
   return (
     <header className="w-full flex justify-center py-2">
-      <div className="flex justify-end fixed top-4 right-4 z-10">
+      <div className="flex justify-end fixed top-4 right-4 z-10 gap-2">
         <AuthButton />
         <ChainSelection />
       </div>
