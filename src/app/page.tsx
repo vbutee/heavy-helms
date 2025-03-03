@@ -32,7 +32,7 @@ const characters: Character[] = [
     luck: 7,
   },
   {
-    playerId: "10009",
+    playerId: "10008",
     name: "Kate of the Ember",
     imageUrl:
       "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW",
@@ -47,7 +47,7 @@ const characters: Character[] = [
     luck: 9,
   },
   {
-    playerId: "10009",
+    playerId: "10007",
     name: "Diego Frostcaller",
     imageUrl:
       "https://ipfs.io/ipfs/QmZqrNGPB2ck2ECdhKZEFaJyVM1YtNDLrhmWN5CxvZTqr5",

@@ -61,9 +61,7 @@ export function GameWrapper({ player1Id, player2Id }: GameWrapperProps) {
       //   ref={containerRef}
       className="relative flex items-center justify-center w-[320px] h-[180px] md:w-[960px] md:h-[540px] "
     >
-      {/* <div className="relative origin-center"> */}
       <PhaserGame player1Id={player1Id} player2Id={player2Id} />
-      {/* </div> */}
 
       {/* Game Controls Overlay */}
       <div className="absolute md:bottom-0 -bottom-10 right-0 p-1 md:p-2 flex md:gap-2 gap-1 bg-stone-900/70 backdrop-blur-sm rounded-tl-md z-10">
