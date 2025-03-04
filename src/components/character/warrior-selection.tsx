@@ -34,7 +34,6 @@ export function WarriorSelection({
       <SectionHeader
         title="Warriors"
         subtitle="Select your warrior to enter the battles"
-        isActive={!selectedCharacter}
       />
 
       <div

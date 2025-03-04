@@ -55,26 +55,7 @@ export function BattleSection({
 
   return (
     <section ref={battleSectionRef} className="mb-12 scroll-mt-4 mt-8">
-      <div className="text-center mb-8">
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, delay: 0.2 }}
-        >
-          <h2 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-amber-600 uppercase tracking-widest mb-1">
-            Choose Your Battle
-          </h2>
-          <div className="flex items-center justify-center mb-3">
-            <div className="h-[1px] w-12 bg-yellow-600/40" />
-            <div className="mx-4">
-              <span className="text-yellow-400/90 text-sm font-medium tracking-widest">
-                GLORY AWAITS
-              </span>
-            </div>
-            <div className="h-[1px] w-12 bg-yellow-600/40" />
-          </div>
-        </motion.div>
-      </div>
+      <SectionHeader title="Choose Your Battle" subtitle="GLORY AWAITS" />
 
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {battleTypes.map((battleType, index) => (
@@ -131,10 +112,10 @@ function BattleCard({
   return (
     <motion.div
       className={`relative bg-gradient-to-b from-amber-900/10 to-stone-900/40 rounded-lg border border-yellow-600/20 overflow-hidden ${
-        !battleType.available 
-          ? "cursor-default" 
-          : selectedCharacter 
-            ? "cursor-pointer hover:border-yellow-600/50" 
+        !battleType.available
+          ? "cursor-default"
+          : selectedCharacter
+            ? "cursor-pointer hover:border-yellow-600/50"
             : "cursor-default"
       }`}
       initial={{ opacity: 0, y: 40 }}
@@ -223,10 +204,10 @@ function BattleCard({
           transition: { duration: 0.5, delay: glowDelay },
         }}
       />
-      
+
       {/* Coming Soon Overlay - only shown for unavailable battle types */}
       {!battleType.available && (
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-black/60 backdrop-blur-sm flex flex-col items-center justify-center z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -245,10 +226,10 @@ function BattleCard({
           </p>
         </motion.div>
       )}
-      
+
       {/* Select Character Overlay - only shown when no character is selected */}
       {!selectedCharacter && battleType.available && (
-        <motion.div 
+        <motion.div
           className="absolute inset-0 bg-black/50 backdrop-blur-sm flex flex-col items-center justify-center z-10"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

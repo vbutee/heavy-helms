@@ -521,7 +521,6 @@ function RecentActivity() {
   return (
     <section className="mb-8">
       <SectionHeader title="Battle Chronicles" subtitle="YOUR SAGA" />
-
       {/* Activity Feed - Placeholder for now */}
       <motion.div
         className="bg-gradient-to-b from-amber-900/5 to-stone-900/30 rounded-lg border border-yellow-600/10 p-6"
