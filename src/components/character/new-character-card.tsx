@@ -58,7 +58,7 @@ export function NewCharacterCard({
           <p className="mt-1 text-sm text-center text-zinc-400">
             Create a new character to join the battle.
           </p>
-          <div className="mt-4 text-xs text-zinc-500">0.1 ETH</div>
+          <div className="mt-4 text-xs text-zinc-500">0.001 ETH</div>
         </>
       )}
     </motion.div>
