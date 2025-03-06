@@ -2,7 +2,6 @@ import { Scene } from "phaser";
 import { EventBus } from "../EventBus";
 import { createPlayerAnimations } from "../systems/animation-system";
 import { loadCombatBytes } from "../utils/combat-loader";
-import { createPublicClient, http } from "viem";
 
 // These imports need to use the correct TypeScript file paths
 // Using placeholder paths until we find the correct ones

@@ -21,7 +21,7 @@ function Providers({ children }: ProvidersProps) {
         <PrivyProvider
           appId={process.env.NEXT_PUBLIC_PRIVY_APP_ID || ""}
           config={{
-            loginMethods: ["email", "wallet"],
+            loginMethods: ["email", "wallet", "farcaster", "twitter"],
             appearance: {
               theme: "dark",
               accentColor: "#f9c846",

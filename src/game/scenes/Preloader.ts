@@ -1,5 +1,5 @@
 import { Scene } from "phaser";
-import { createPublicClient, http } from "viem";
+import { http } from "viem";
 import { EventBus } from "../EventBus";
 import { loadCharacterData } from "../utils/nft-loader";
 import { loadDuelDataFromTx } from "../utils/combat-loader";
@@ -9,6 +9,7 @@ import {
   PlayerABI,
   SkinRegistryABI,
 } from "../abi";
+import { viemClient } from "@/config";
 
 // Define types for combat data
 interface CombatBytes {
@@ -367,9 +368,9 @@ export class Preloader extends Scene {
         `https://${networkName}.g.alchemy.com/v2/${apiKey}`,
       );
       
-      const client = createPublicClient({
-        transport,
-      });
+      // const client = createPublicClient({
+      //   transport,
+      // });
 
       const gameContractAddress = process.env
         .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as `0x${string}`;
@@ -380,26 +381,26 @@ export class Preloader extends Scene {
         return;
       }
       
-      const playerContractAddress = await client.readContract({
+      const playerContractAddress = await viemClient.readContract({
         address: gameContractAddress,
         abi: PracticeGameABI,
         functionName: "playerContract",
       });
 
-      const skinRegistryAddress = await client.readContract({
+      const skinRegistryAddress = await viemClient.readContract({
         address: playerContractAddress as `0x${string}`,
         abi: PlayerABI,
         functionName: "skinRegistry",
       });
 
-      const defaultSkinInfo = await client.readContract({
+      const defaultSkinInfo = await viemClient.readContract({
         address: skinRegistryAddress as `0x${string}`,
         abi: SkinRegistryABI,
         functionName: "getSkin",
         args: [0], // Index 0 is DefaultPlayerSkinNFT
       });
 
-      const currentTokenId = await client.readContract({
+      const currentTokenId = await viemClient.readContract({
         address: defaultSkinInfo.contractAddress as `0x${string}`,
         abi: DefaultPlayerSkinNFTABI,
         functionName: "CURRENT_TOKEN_ID",
@@ -514,9 +515,6 @@ export class Preloader extends Scene {
         `https://${networkName}.g.alchemy.com/v2/${apiKey}`,
       );
       
-      const client = createPublicClient({
-        transport,
-      });
 
       // Get skin registry from player contract
       const playerContractAddress = process.env
@@ -530,7 +528,7 @@ export class Preloader extends Scene {
       // Get skin info for both players
       let skinInfo1, skinInfo2;
       try {
-        skinInfo1 = await client.readContract({
+        skinInfo1 = await viemClient.readContract({
           address: playerContractAddress as `0x${string}`,
           abi: SkinRegistryABI,
           functionName: "getSkin",
@@ -541,7 +539,7 @@ export class Preloader extends Scene {
       }
       
       try {
-        skinInfo2 = await client.readContract({
+        skinInfo2 = await viemClient.readContract({
           address: playerContractAddress as `0x${string}`,
           abi: SkinRegistryABI,
           functionName: "getSkin",
@@ -555,11 +553,11 @@ export class Preloader extends Scene {
       let loadout1, loadout2;
       try {
         if (skinInfo1 && skinInfo1.contractAddress) {
-          loadout1 = await client.readContract({
+          loadout1 = await viemClient.readContract({
             address: skinInfo1.contractAddress as `0x${string}`,
             abi: DefaultPlayerSkinNFTABI,
             functionName: "getSkinAttributes",
-            args: [this.player1Data.stats.skinTokenId],
+            args: [BigInt(this.player1Data.stats.skinTokenId)],
           });
         } else {
           loadout1 = null;
@@ -570,11 +568,11 @@ export class Preloader extends Scene {
       
       try {
         if (skinInfo2 && skinInfo2.contractAddress) {
-          loadout2 = await client.readContract({
+          loadout2 = await viemClient.readContract({
             address: skinInfo2.contractAddress as `0x${string}`,
             abi: DefaultPlayerSkinNFTABI,
             functionName: "getSkinAttributes",
-            args: [this.player2Data.stats.skinTokenId],
+            args: [BigInt(this.player2Data.stats.skinTokenId)],
           });
         } else {
           loadout2 = null;
@@ -636,14 +634,7 @@ export class Preloader extends Scene {
 
   async fetchBlockNumber() {
     try {
-      const transport = http(
-        `https://${this.network}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-      );
-      const client = createPublicClient({
-        transport,
-      });
-
-      const block = await client.getBlockNumber();
+      const block = await viemClient.getBlockNumber();
       this.blockNumber = block.toString();
     } catch (error) {
       this.blockNumber = "Unknown";

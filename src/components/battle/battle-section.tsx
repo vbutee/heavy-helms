@@ -18,8 +18,6 @@ export function BattleSection({
   hasBattleInView,
   battleSectionRef,
 }: BattleSectionProps) {
-  const router = useRouter();
-
   // Battle types with their properties
   const battleTypes = [
     {
@@ -56,7 +54,6 @@ export function BattleSection({
   return (
     <section ref={battleSectionRef} className="mb-12 scroll-mt-4 mt-8">
       <SectionHeader title="Choose Your Battle" subtitle="GLORY AWAITS" />
-
       <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {battleTypes.map((battleType, index) => (
           <BattleCard

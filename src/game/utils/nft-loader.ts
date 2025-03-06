@@ -1,8 +1,6 @@
 import { Alchemy, type Network, type AlchemySettings } from "alchemy-sdk";
 import {
-  createPublicClient,
-  http,
-  parseAbiItem,
+
   keccak256 as viemKeccak256,
   toHex,
   type Address,
@@ -19,6 +17,7 @@ import {
 } from "../abi";
 import { getFighterType, FighterType, getContractInfo } from "./fighter-types";
 import { type AbiType, getAbiForType } from "./abi-utils";
+import { viemClient } from "@/config";
 
 interface PlayerAttributes {
   strength: number;
@@ -128,13 +127,6 @@ export async function loadCharacterData(
     // biome-ignore lint/style/noNonNullAssertion: <explanation>
     const networkName = getAlchemyNetwork(settings.network!);
 
-    const transport = http(
-      `https://${networkName}.g.alchemy.com/v2/${settings.apiKey}`,
-    );
-    const client = createPublicClient({
-      transport,
-    });
-
     // Get fighter type and contract info
     const fighterType = getFighterType(playerId.toString());
     const contractInfo = getContractInfo(fighterType);
@@ -142,7 +134,7 @@ export async function loadCharacterData(
     console.log("Contract info:", contractInfo);
 
     // Get contract address
-    const contractAddress = (await client.readContract({
+    const contractAddress = (await viemClient.readContract({
       address: process.env
         .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address,
       abi: PracticeGameABI,
@@ -154,7 +146,7 @@ export async function loadCharacterData(
     console.log("Player data being loaded for: ", playerId, typeof playerId);
     // Get fighter stats
     try {
-      const playerStats = (await client.readContract({
+      const playerStats = (await viemClient.readContract({
         address: contractAddress,
         abi: getAbiForType(contractInfo.abi as AbiType),
         functionName: contractInfo.method,
@@ -173,7 +165,7 @@ export async function loadCharacterData(
         fighterType === FighterType.Player ||
         fighterType === FighterType.DefaultPlayer
       ) {
-        const nameRegistryAddress = (await client.readContract({
+        const nameRegistryAddress = (await viemClient.readContract({
           address: contractAddress,
           abi: PlayerABI,
           functionName: "nameRegistry",
@@ -181,7 +173,7 @@ export async function loadCharacterData(
 
         console.log("Name registry address:", nameRegistryAddress);
 
-        const names = (await client.readContract({
+        const names = (await viemClient.readContract({
           address: nameRegistryAddress,
           abi: PlayerNameRegistryABI,
           functionName: "getFullName",
@@ -200,7 +192,7 @@ export async function loadCharacterData(
       console.log("Player name:", playerName);
 
       // Get GameEngine address from PracticeGame contract
-      const gameEngineAddress = (await client.readContract({
+      const gameEngineAddress = (await viemClient.readContract({
         address: process.env
           .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address,
         abi: PracticeGameABI,
@@ -225,7 +217,7 @@ export async function loadCharacterData(
       };
 
       // Calculate derived stats using GameEngine contract
-      const calculatedStats = (await client.readContract({
+      const calculatedStats = (await viemClient.readContract({
         address: gameEngineAddress,
         abi: GameEngineABI,
         functionName: "calculateStats",
@@ -268,14 +260,16 @@ export async function loadCharacterData(
       };
 
       // Update skin registry call with new address
-      const skinRegistryAddress = (await client.readContract({
+      const skinRegistryAddress = (await viemClient.readContract({
         address: contractAddress,
         abi: PlayerABI,
         functionName: "skinRegistry",
       })) as Address;
 
+      console.log("Skin registry address:", skinRegistryAddress);
+
       // Get skin info
-      const skinInfo = await client.readContract({
+      const skinInfo = await viemClient.readContract({
         address: skinRegistryAddress,
         abi: SkinRegistryABI,
         functionName: "getSkin",
@@ -283,7 +277,7 @@ export async function loadCharacterData(
       });
 
       // Get NFT metadata
-      const tokenURI = await client.readContract({
+      const tokenURI = await viemClient.readContract({
         address: skinInfo.contractAddress as Address,
         abi: ERC721ABI,
         functionName: "tokenURI",

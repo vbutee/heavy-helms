@@ -1,5 +1,5 @@
 export { PlayerABI } from './PlayerABI.abi';
-export { PracticeGameABI } from './PracticeGameABI.abi';
+export { PracticeGameABI } from './PracticeGameABI';
 export { DuelGameABI } from './DuelGameABI.abi';
 export { GameEngineABI } from './GameEngineABI.abi';
 export { SkinRegistryABI } from './SkinRegistryABI.abi';

@@ -13,6 +13,7 @@ import { parseEther, encodeFunctionData } from "viem";
 import { PlayerABI } from "@/game/abi/PlayerABI.abi";
 import { useWallet } from "@/hooks/use-wallet";
 import type { Character } from "@/types/player.types";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface PlayerContextType {
   isCreatingCharacter: boolean;
@@ -42,17 +43,36 @@ export function PlayerProvider({
   const { authenticated, user } = usePrivy();
   const { wallets } = useWallets();
   const { isWrongNetwork, switchToBaseSepolia } = useWallet();
+  const queryClient = useQueryClient();
 
   const [isCreatingCharacter, setIsCreatingCharacter] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
   const [characters, setCharacters] = useState<Character[]>(initialCharacters);
 
-  // Function to refresh the characters list from the contract
+  // Function to refresh the characters list using React Query
   const refreshCharacters = useCallback(async () => {
-    // We would typically call an API or contract method here
-    // For now, we'll just reload the page to get fresh data from the server
-    window.location.reload();
-  }, []);
+    // Get the wallet address to construct the proper query key
+    const walletAddress = wallets?.find(
+      (wallet) => wallet.connectorType === "embedded"
+    )?.address;
+    
+    // Invalidate the players query to trigger a refetch
+    await queryClient.invalidateQueries({
+      queryKey: ["players", walletAddress],
+    });
+    
+    // Optionally fetch the latest data directly
+    const latestData = queryClient.getQueryData<Character[]>(["players", walletAddress]);
+    if (latestData) {
+      setCharacters(latestData);
+    }
+
+    // Return a promise that resolves when the query has been refetched
+    return queryClient.refetchQueries({
+      queryKey: ["players", walletAddress],
+      exact: false,
+    });
+  }, [queryClient, wallets]);
 
   // Function to create a new character
   const createCharacter = useCallback(async () => {

@@ -2,7 +2,6 @@ import * as Phaser from 'phaser';
 import { LoadingScreen } from '../ui/loadingScreen';
 import { loadCharacterData } from '../utils/nftLoader';
 import { loadDuelDataFromTx } from '../utils/combatLoader';
-import { createPublicClient, http } from 'viem';
 import { DefaultPlayerSkinNFTABI } from '../abi';
 import { PracticeGameABI } from '../abi';
 import { PlayerABI } from '../abi';
@@ -75,14 +74,9 @@ export default class BootScene extends Phaser.Scene {
             // Store the loaded player data
             [this.player1Data, this.player2Data] = playerData;
 
-            // Get loadout info for both players
-            const transport = http(`https://${this.network}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`);
-            const client = createPublicClient({
-                transport
-            });
 
             // Get skin registry from player contract
-            const skinRegistryAddress = await client.readContract({
+            const skinRegistryAddress = await viemClient.readContract({
                 address: process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS,
                 abi: PlayerABI,
                 functionName: 'skinRegistry'
@@ -90,13 +84,13 @@ export default class BootScene extends Phaser.Scene {
 
             // Get skin info for both players
             const [skinInfo1, skinInfo2] = await Promise.all([
-                client.readContract({
+                viemClient.readContract({
                     address: skinRegistryAddress,
                     abi: SkinRegistryABI,
                     functionName: 'getSkin',
                     args: [this.player1Data.stats.skinIndex]
                 }),
-                this.player2Data ? client.readContract({
+                this.player2Data ? viemClient.readContract({
                     address: skinRegistryAddress,
                     abi: SkinRegistryABI,
                     functionName: 'getSkin',
@@ -106,13 +100,13 @@ export default class BootScene extends Phaser.Scene {
 
             // Get attributes from the skin contracts
             const [loadout1, loadout2] = await Promise.all([
-                client.readContract({
+                viemClient.readContract({
                     address: skinInfo1.contractAddress,
                     abi: DefaultPlayerSkinNFTABI,
                     functionName: 'getSkinAttributes',
                     args: [this.player1Data.stats.skinTokenId]
                 }),
-                this.player2Data ? client.readContract({
+                this.player2Data ? viemClient.readContract({
                     address: skinInfo2.contractAddress,
                     abi: DefaultPlayerSkinNFTABI,
                     functionName: 'getSkinAttributes',
@@ -209,29 +203,23 @@ export default class BootScene extends Phaser.Scene {
 
     async selectRandomPlayers() {
         try {
-            const networkName = process.env.NEXT_PUBLIC_ALCHEMY_NETWORK.toLowerCase();
-            const transport = http(`https://${networkName}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`);
-            const client = createPublicClient({
-                transport
-            });
-
             // Get player contract address from game contract first
             const gameContractAddress = process.env.NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS;
-            const playerContractAddress = await client.readContract({
+            const playerContractAddress = await viemClient.readContract({
                 address: gameContractAddress,
                 abi: PracticeGameABI,
                 functionName: 'playerContract'
             });
 
             // Get skin registry address from player contract
-            const skinRegistryAddress = await client.readContract({
+            const skinRegistryAddress = await viemClient.readContract({
                 address: playerContractAddress,
                 abi: PlayerABI,
                 functionName: 'skinRegistry'
             });
 
             // Get default skin NFT address from skin registry (index 0)
-            const defaultSkinInfo = await client.readContract({
+            const defaultSkinInfo = await viemClient.readContract({
                 address: skinRegistryAddress,
                 abi: SkinRegistryABI,
                 functionName: 'getSkin',
@@ -239,7 +227,7 @@ export default class BootScene extends Phaser.Scene {
             });
 
             // Get the current token ID (total number of skins)
-            const currentTokenId = await client.readContract({
+            const currentTokenId = await viemClient.readContract({
                 address: defaultSkinInfo.contractAddress,
                 abi: DefaultPlayerSkinNFTABI,
                 functionName: 'CURRENT_TOKEN_ID'
@@ -265,13 +253,9 @@ export default class BootScene extends Phaser.Scene {
     }
 
     async fetchBlockNumber() {
-        const transport = http(`https://${this.network}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`);
-        const client = createPublicClient({
-            transport
-        });
 
         try {
-            const block = await client.getBlockNumber();
+            const block = await viemClient.getBlockNumber();
             this.blockNumber = block.toString();
         } catch (error) {
             this.blockNumber = 'Unknown';

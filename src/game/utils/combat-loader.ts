@@ -1,4 +1,4 @@
-import { createPublicClient, http, parseEventLogs, type Address } from "viem";
+import { parseEventLogs, type Address } from "viem";
 import {
   CombatResultType,
   WinCondition,
@@ -17,6 +17,7 @@ import { keccak256 as viemKeccak256, toHex } from "viem";
 import { Alchemy } from "alchemy-sdk";
 import { getFighterType, getContractInfo } from "./fighter-types";
 import { type AbiType, getAbiForType } from "./abi-utils";
+import { viemClient } from "@/config";
 
 interface CombatAction {
   p1Result: number;
@@ -58,24 +59,18 @@ async function decodeCombatBytes(
   bytes: `0x${string}`,
   network: string,
 ): Promise<DecodedCombatResult> {
-  const transport = http(
-    `https://${network}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-  );
-  const client = createPublicClient({
-    transport,
-  });
 
   const gameContractAddress = process.env
     .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address;
 
-  const gameEngineAddress = await client.readContract({
+  const gameEngineAddress = await viemClient.readContract({
     address: gameContractAddress,
     abi: PracticeGameABI,
     functionName: "gameEngine",
   });
 
   // Decode combat log using game engine
-  const decodedCombat = await client.readContract({
+  const decodedCombat = await viemClient.readContract({
     address: gameEngineAddress,
     abi: GameEngineABI,
     functionName: "decodeCombatLog",
@@ -121,13 +116,6 @@ export async function loadCombatBytes(
     const networkName = process.env.NEXT_PUBLIC_ALCHEMY_NETWORK?.toLowerCase();
     if (!networkName) throw new Error("Network name not configured");
 
-    const transport = http(
-      `https://${networkName}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-    );
-    const client = createPublicClient({
-      chain: mainnet,
-      transport,
-    });
 
     const gameContractAddress = process.env
       .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address;
@@ -140,12 +128,12 @@ export async function loadCombatBytes(
 
     // Get contract addresses for both fighters
     const [contract1Address, contract2Address] = await Promise.all([
-      client.readContract({
+      viemClient.readContract({
         address: gameContractAddress,
         abi: PracticeGameABI,
         functionName: contract1Info.contractFunction,
       }),
-      client.readContract({
+      viemClient.readContract({
         address: gameContractAddress,
         abi: PracticeGameABI,
         functionName: contract2Info.contractFunction,
@@ -154,13 +142,13 @@ export async function loadCombatBytes(
 
     // Get fighter data for both fighters
     const [player1Data, player2Data] = await Promise.all([
-      client.readContract({
+      viemClient.readContract({
         address: contract1Address as Address,
         abi: getAbiForType(contract1Info.abi as AbiType),
         functionName: contract1Info.method,
         args: [BigInt(player1Id)],
       }),
-      client.readContract({
+      viemClient.readContract({
         address: contract2Address as Address,
         abi: getAbiForType(contract2Info.abi as AbiType),
         functionName: contract2Info.method,
@@ -185,7 +173,7 @@ export async function loadCombatBytes(
     };
 
     // Get combat bytes
-    const combatBytes = await client.readContract({
+    const combatBytes = await viemClient.readContract({
       address: gameContractAddress,
       abi: PracticeGameABI,
       functionName: "play",
@@ -193,14 +181,14 @@ export async function loadCombatBytes(
     });
 
     // Get game engine address
-    const gameEngineAddress = await client.readContract({
+    const gameEngineAddress = await viemClient.readContract({
       address: gameContractAddress,
       abi: PracticeGameABI,
       functionName: "gameEngine",
     });
 
     // Decode using GameEngine
-    const decodedCombat = await client.readContract({
+    const decodedCombat = await viemClient.readContract({
       address: gameEngineAddress,
       abi: GameEngineABI,
       functionName: "decodeCombatLog",
@@ -264,15 +252,8 @@ export async function loadDuelDataFromTx(
   network: string,
 ): Promise<DuelResult> {
   try {
-    const transport = http(
-      `https://${network}.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_API_KEY}`,
-    );
-    const client = createPublicClient({
-      transport,
-    });
-
     // Get transaction receipt
-    const receipt = await client.getTransactionReceipt({
+    const receipt = await viemClient.getTransactionReceipt({
       hash: txId as `0x${string}`,
     });
 
@@ -297,20 +278,20 @@ export async function loadDuelDataFromTx(
     // Get player contract to decode player data
     const gameContractAddress = process.env
       .NEXT_PUBLIC_DUEL_GAME_CONTRACT_ADDRESS as Address;
-    const playerContractAddress = await client.readContract({
+    const playerContractAddress = await viemClient.readContract({
       address: gameContractAddress,
       abi: DuelGameABI,
       functionName: "playerContract",
     });
 
     // Decode player data from indexed parameters
-    const [player1Id, player1Stats] = await client.readContract({
+    const [player1Id, player1Stats] = await viemClient.readContract({
       address: playerContractAddress,
       abi: PlayerABI,
       functionName: "decodePlayerData",
       args: [player1Data],
     });
-    const [player2Id, player2Stats] = await client.readContract({
+    const [player2Id, player2Stats] = await viemClient.readContract({
       address: playerContractAddress,
       abi: PlayerABI,
       functionName: "decodePlayerData",
@@ -318,14 +299,14 @@ export async function loadDuelDataFromTx(
     });
 
     // Get game engine address
-    const gameEngineAddress = await client.readContract({
+    const gameEngineAddress = await viemClient.readContract({
       address: gameContractAddress,
       abi: DuelGameABI,
       functionName: "gameEngine",
     });
 
     // Decode combat bytes
-    const decodedCombat = await client.readContract({
+    const decodedCombat = await viemClient.readContract({
       address: gameEngineAddress,
       abi: GameEngineABI,
       functionName: "decodeCombatLog",
