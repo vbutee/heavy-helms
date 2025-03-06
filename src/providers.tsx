@@ -7,6 +7,7 @@ import { config } from "./config";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { base, baseSepolia } from "wagmi/chains";
 import { WalletProvider } from "./store/wallet-context";
+import { PlayerProvider } from "./store/player-context";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -35,8 +36,10 @@ function Providers({ children }: ProvidersProps) {
           }}
         >
           <WalletProvider>
-            {/* Initialize EventBus globally for Phaser games */}
-            {children}
+            <PlayerProvider initialCharacters={[]}>
+              {/* Initialize EventBus globally for Phaser games */}
+              {children}
+            </PlayerProvider>
           </WalletProvider>
         </PrivyProvider>
       </QueryClientProvider>

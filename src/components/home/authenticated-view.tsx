@@ -8,17 +8,16 @@ import React from "react";
 import { ChevronDown } from "lucide-react";
 import { BattleSection } from "../battle/battle-section";
 import { useInView } from "react-intersection-observer";
-import { PlayerProvider } from "@/store/player-context";
+import { PlayerProvider, usePlayer } from "@/store/player-context";
 import { WarriorSelection } from "../character/warrior-selection";
 import { useOwnedPlayers } from "@/hooks/use-owned-players";
 import { SectionHeader } from "../ui/section-header";
+import { usePlayerData } from "@/hooks/use-player-data";
 
-interface AuthenticatedViewProps {
-  characters: Character[];
-}
-
-export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
-  const { players } = useOwnedPlayers();
+export function AuthenticatedView() {
+  // const { players } = useOwnedPlayers();
+  const { characters: players } = usePlayer();
+  console.log("players", players);
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
@@ -61,7 +60,7 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
   }, [inViewRef]);
 
   return (
-    <PlayerProvider initialCharacters={characters}>
+    <>
       <div className="max-w-7xl mx-auto">
         <WarriorSelection
           selectedCharacter={selectedCharacter}
@@ -82,7 +81,7 @@ export function AuthenticatedView({ characters }: AuthenticatedViewProps) {
         />
       </div>
       <RecentActivity />
-    </PlayerProvider>
+    </>
   );
 }
 

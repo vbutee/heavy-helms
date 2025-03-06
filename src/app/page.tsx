@@ -7,7 +7,6 @@ import { CharacterGallery } from "@/components/home/character-gallery";
 import { CommunityStats } from "@/components/home/community-stats";
 import { GameIntroduction } from "@/components/home/game-introduction";
 import { AuthenticatedView } from "@/components/home/authenticated-view";
-import { useOwnedPlayers } from "@/hooks/use-owned-players";
 
 // Sample character data - will be moved to a service later
 const characters: Character[] = [
@@ -59,12 +58,10 @@ const characters: Character[] = [
 ];
 export default function Home() {
   const { authenticated } = usePrivy();
-  const { players, isLoading, error } = useOwnedPlayers();
-  console.log("Players:", players);
   return (
     <div className="min-h-screen w-full overflow-y-auto">
       {authenticated ? (
-        <AuthenticatedView characters={characters} />
+        <AuthenticatedView />
       ) : (
         // Non-authenticated view
         <>
