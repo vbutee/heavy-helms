@@ -1,15 +1,7 @@
-import { createPublicClient } from 'viem';
-import { http, createConfig } from 'wagmi'
-import { base, baseSepolia, mainnet, sepolia } from 'wagmi/chains'
+import { createPublicClient, http } from 'viem';
+import { baseSepolia } from 'viem/chains'
 
-export const config = createConfig({
-  chains: [base, baseSepolia],
-  transports: {
-    [base.id]: http(),
-    [baseSepolia.id]: http(),
-  },
-})
-
+// Export the public viem client for direct blockchain interactions
 export const viemClient = createPublicClient({
   chain: baseSepolia,
   transport: http(),

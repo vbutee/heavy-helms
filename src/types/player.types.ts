@@ -20,11 +20,21 @@ export type Weapon =
 export type Armor = "Plate" | "Chain" | "Leather" | "Cloth";
 
 /**
+ * Character name data
+ */
+export interface CharacterName {
+  firstName: string;
+  surname: string;
+  fullName: string;
+}
+
+/**
  * Character information
  */
 export interface Character {
   playerId: string;
   name: string;
+  nameData?: CharacterName;
   imageUrl: string;
   stance: Stance;
   weapon: Weapon;
@@ -35,6 +45,9 @@ export interface Character {
   agility: number;
   stamina: number;
   luck: number;
+  wins?: number;
+  losses?: number;
+  kills?: number;
 }
 
 /**

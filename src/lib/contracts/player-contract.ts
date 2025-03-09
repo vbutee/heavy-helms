@@ -1,15 +1,11 @@
+// src/lib/contracts/player-contract.ts
 import { type Address, Hex, createPublicClient, http } from "viem"
 import { baseSepolia } from "viem/chains"
+import { PlayerABI } from "@/game/abi/PlayerABI.abi"
 import { PlayerNameRegistryABI } from "@/game/abi/PlayerNameRegistryABI.abi"
-import { DefaultPlayerSkinNFTABI, PlayerABI } from "@/game/abi"
-
-// Create a single client instance to be reused
-const publicClient = createPublicClient({
-  chain: baseSepolia,
-  transport: http(),
-})
-
-// Constants
+import { viemClient } from "@/config"
+import { DefaultPlayerSkinNFTABI } from "@/game/abi/DefaultPlayerSkinNFT.abi"
+// Contract addresses
 const playerContractAddress = process.env.NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS as Address
 const playerNameRegistryAddress = process.env.NEXT_PUBLIC_NAME_REGISTRY_ADDRESS as Address
 
@@ -34,18 +30,34 @@ export interface RawPlayerData {
   kills: number
 }
 
-// Contract read functions - one function per contract call
+export interface PlayerName {
+  firstName: string
+  surname: string
+  fullName: string
+}
+
+export interface SkinData {
+  contractAddress: Address
+  tokenId: number
+  weapon?: number
+  armor?: number
+  stance?: number
+  imageUrl?: string
+  attributes?: any[]
+}
+
+// Player ID functions
 export async function getPlayerIds(walletAddress: Address): Promise<number[]> {
   if (!walletAddress) return []
   
   try {
-    const ids = await publicClient.readContract({
+    const ids = await viemClient.readContract({
       address: playerContractAddress,
       abi: PlayerABI,
       functionName: "getPlayerIds",
       args: [walletAddress],
     })
-    
+    console.log("ids", ids)
     return ids.map(id => Number(id))
   } catch (error) {
     console.error("Error fetching player IDs:", error)
@@ -53,9 +65,11 @@ export async function getPlayerIds(walletAddress: Address): Promise<number[]> {
   }
 }
 
+
+// Player data functions
 export async function getPlayerData(playerId: number): Promise<RawPlayerData | null> {
   try {
-    const playerData = await publicClient.readContract({
+    const playerData = await viemClient.readContract({
       address: playerContractAddress,
       abi: PlayerABI,
       functionName: "getPlayer",
@@ -69,14 +83,19 @@ export async function getPlayerData(playerId: number): Promise<RawPlayerData | n
   }
 }
 
-export async function getPlayerName(firstNameIndex: number, surnameIndex: number) {
+// Name functions - enhanced based on Preloader.ts
+export async function getPlayerName(firstNameIndex: number, surnameIndex: number): Promise<PlayerName> {
   try {
-    const [firstName, surname] = await publicClient.readContract({
+    // This matches how Preloader.ts fetches names
+    const nameData = await viemClient.readContract({
       address: playerNameRegistryAddress,
       abi: PlayerNameRegistryABI,
       functionName: "getFullName",
       args: [firstNameIndex, surnameIndex],
     })
+    console.log("nameData", nameData)
+    // The API returns [firstName, surname]
+    const [firstName, surname] = nameData as [string, string]
     
     return {
       firstName,
@@ -85,27 +104,62 @@ export async function getPlayerName(firstNameIndex: number, surnameIndex: number
     }
   } catch (error) {
     console.error("Error fetching player name:", error)
-    return { firstName: "Unknown", surname: "Warrior", fullName: "Unknown Warrior" }
+    return { 
+      firstName: "Unknown", 
+      surname: "Warrior", 
+      fullName: "Unknown Warrior" 
+    }
   }
 }
 
-export async function getSkinAttributes(skinContractAddress: Address, tokenId: number) {
+// Skin functions
+export async function getSkinData(playerId: number): Promise<SkinData | null> {
   try {
-    const attributes = await publicClient.readContract({
-      address: skinContractAddress,
-      abi: DefaultPlayerSkinNFTABI,
-      functionName: "getSkinAttributes",
-      args: [BigInt(tokenId)],
+    // First get the player's skin info
+    const skinInfo = await viemClient.readContract({
+      address: playerContractAddress,
+      abi: PlayerABI,
+      functionName: "getCurrentSkin",
+      args: [playerId],
     })
     
-    return attributes
+    if (!skinInfo || !skinInfo.contractAddress) {
+      return null
+    }
+    
+    // Now get the skin attributes from the skin contract
+    const skinAttributes = await viemClient.readContract({
+      address: skinInfo.contractAddress as Address,
+      abi: DefaultPlayerSkinNFTABI,
+      functionName: "getSkinAttributes",
+      args: [BigInt(skinInfo.skinTokenId)],
+    })
+    
+    // Use attributes to determine equipment, following the pattern in Preloader.ts
+    return {
+      contractAddress: skinInfo.contractAddress as Address,
+      tokenId: Number(skinInfo.tokenId),
+      weapon: skinAttributes?.weapon || skinAttributes?.[0] || 0,
+      armor: skinAttributes?.armor || skinAttributes?.[1] || 0,
+      stance: skinAttributes?.stance || skinAttributes?.[2] || 0,
+      // imageUrl would come from metadata
+      attributes: skinAttributes?.attributes || []
+    }
   } catch (error) {
-    console.error("Error fetching skin attributes:", error)
+    console.error(`Error fetching skin data for player ${playerId}:`, error)
     return null
   }
 }
 
-export async function getSkinsForContract(skinContractAddress: Address, tokenIds: number[]) {
-  // Implementation of batch loading for skins
-  // Could use multicall here
+// Load IPFS metadata for a skin
+export async function loadSkinMetadata(ipfsUri: string): Promise<any> {
+  try {
+    // Convert IPFS URI to HTTPS
+    const url = ipfsUri.replace('ipfs://', 'https://ipfs.io/ipfs/')
+    const response = await fetch(url)
+    return await response.json()
+  } catch (error) {
+    console.error("Error loading skin metadata:", error)
+    return null
+  }
 }

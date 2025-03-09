@@ -8,11 +8,10 @@ import React from "react";
 import { ChevronDown } from "lucide-react";
 import { BattleSection } from "../battle/battle-section";
 import { useInView } from "react-intersection-observer";
-import { PlayerProvider, usePlayer } from "@/store/player-context";
+import { usePlayer } from "@/store/player-context";
 import { WarriorSelection } from "../character/warrior-selection";
-import { useOwnedPlayers } from "@/hooks/use-owned-players";
 import { SectionHeader } from "../ui/section-header";
-import { usePlayerData } from "@/hooks/use-player-data";
+import { useAccount } from "wagmi";
 
 export function AuthenticatedView() {
   // const { players } = useOwnedPlayers();

@@ -7,7 +7,10 @@ import {
   getPlayerIds, 
   getPlayerData, 
   getPlayerName, 
-  getSkinAttributes
+  getSkinData,
+  loadSkinMetadata,
+  PlayerName,
+  SkinData
 } from "@/lib/contracts/player-contract"
 import { useWallets } from "@privy-io/react-auth"
 
@@ -54,8 +57,11 @@ function mapArmorToString(armorValue: number | string): Armor {
 export function usePlayerIds(address?: Address) {
   return useQuery({
     queryKey: ["playerIds", address],
-    queryFn: () => getPlayerIds(address as Address),
-    enabled: Boolean(address),
+    queryFn: async () => {
+      if (!address) return []
+      return getPlayerIds(address)
+    },
+    enabled: Boolean(address)
   })
 }
 
@@ -76,12 +82,22 @@ export function usePlayerName(firstNameIndex?: number, surnameIndex?: number) {
   })
 }
 
-// Main hook that combines all data
+// Hook for skin data
+export function useSkinData(playerId: number) {
+  return useQuery({
+    queryKey: ["skinData", playerId],
+    queryFn: () => getSkinData(playerId),
+    enabled: playerId > 0,
+  })
+}
+
+// Main hook that combines all data - enhanced with name data
 export function useOwnedPlayers(options: { enabled?: boolean } = {}) {
   const { wallets } = useWallets();
   const address = wallets?.find(
     (wallet) => wallet.connectorType === "embedded",
   )?.address;
+  
   // Step 1: Get player IDs
   const { 
     data: playerIds,
@@ -96,47 +112,69 @@ export function useOwnedPlayers(options: { enabled?: boolean } = {}) {
     error: playersError,
     refetch
   } = useQuery({
-    queryKey: ["players", address, playerIds],
+    queryKey: ["players", address],
     queryFn: async (): Promise<Character[]> => {
       if (!playerIds || !playerIds.length) return []
       
       // Step 2.1: Fetch basic player data for all IDs
       const playerDataPromises = playerIds.map(async (playerId) => {
-        const rawData = await getPlayerData(playerId)
-        if (!rawData) return null
-        
-        // Step 2.2: Fetch player name
-        const nameData = await getPlayerName(
-          rawData.firstNameIndex,
-          rawData.surnameIndex
-        )
-        
-        // Step 2.3: Get skin attributes if available
-        let stance: Stance = "balanced"
-        let weapon: Weapon = "Sword + Shield"
-        let armor: Armor = "Cloth"
-        let imageUrl = "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW"
-        
-        // Process skin data to extract equipment if available
-        if (rawData.skin?.skinIndex) {
-          // Here you would fetch skin data if needed
-          // For now we'll use defaults
-        }
-        
-        // Step 2.4: Map to Character type
-        return {
-          playerId: playerId.toString(),
-          name: nameData.fullName,
-          imageUrl,
-          stance,
-          weapon,
-          armor,
-          strength: rawData.attributes.strength,
-          constitution: rawData.attributes.constitution,
-          size: rawData.attributes.size,
-          agility: rawData.attributes.agility,
-          stamina: rawData.attributes.stamina,
-          luck: rawData.attributes.luck,
+        try {
+          // Get raw player data
+          const rawData = await getPlayerData(playerId)
+          if (!rawData) return null
+          
+          // Step 2.2: Fetch player name - following Preloader.ts pattern
+          const nameData = await getPlayerName(
+            rawData.firstNameIndex,
+            rawData.surnameIndex
+          )
+          
+          // Step 2.3: Get skin data if available
+          let stance: Stance = "balanced"
+          let weapon: Weapon = "Sword + Shield"
+          let armor: Armor = "Cloth"
+          let imageUrl = "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW" // Default
+          
+          // Process skin data to extract equipment
+          const skinData = await getSkinData(playerId)
+          if (skinData) {
+            // Map equipment types based on skin data
+            if (skinData.weapon !== undefined) {
+              weapon = mapWeaponToString(skinData.weapon)
+            }
+            
+            if (skinData.armor !== undefined) {
+              armor = mapArmorToString(skinData.armor)
+            }
+            
+            if (skinData.stance !== undefined) {
+              stance = mapStanceToString(skinData.stance)
+            }
+            
+            // Set image URL if available
+            if (skinData.imageUrl) {
+              imageUrl = skinData.imageUrl
+            }
+          }
+          
+          // Step 2.4: Map to Character type
+          return {
+            playerId: playerId.toString(),
+            name: nameData.fullName,
+            imageUrl,
+            stance,
+            weapon,
+            armor,
+            strength: rawData.attributes.strength,
+            constitution: rawData.attributes.constitution,
+            size: rawData.attributes.size,
+            agility: rawData.attributes.agility,
+            stamina: rawData.attributes.stamina,
+            luck: rawData.attributes.luck,
+          }
+        } catch (error) {
+          console.error(`Error fetching data for player ${playerId}:`, error)
+          return null
         }
       })
       
@@ -158,4 +196,78 @@ export function useOwnedPlayers(options: { enabled?: boolean } = {}) {
     error: idsError || playersError,
     refetch,
   }
+}
+
+// Advanced hook for detailed player data with all components
+export function useDetailedPlayerData(playerId: number) {
+  // Base player data
+  const { data: rawData, isLoading: isLoadingRaw } = usePlayerData(playerId)
+  
+  // Player name
+  const { 
+    data: nameData, 
+    isLoading: isLoadingName 
+  } = usePlayerName(
+    rawData?.firstNameIndex,
+    rawData?.surnameIndex
+  )
+  
+  // Skin data
+  const { data: skinData, isLoading: isLoadingSkin } = useSkinData(playerId)
+  
+  // Combine all data
+  return useQuery({
+    queryKey: ["detailedPlayer", playerId, rawData, nameData, skinData],
+    queryFn: async (): Promise<Character | null> => {
+      if (!rawData || !nameData) return null
+      
+      // Map equipment from skin data
+      let stance: Stance = "balanced"
+      let weapon: Weapon = "Sword + Shield"
+      let armor: Armor = "Cloth"
+      let imageUrl = "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW" // Default
+      
+      if (skinData) {
+        // Map equipment types
+        weapon = mapWeaponToString(skinData.weapon || 0)
+        armor = mapArmorToString(skinData.armor || 0)
+        stance = mapStanceToString(skinData.stance || 0)
+        
+        // Use skin image URL if available
+        if (skinData.imageUrl) {
+          imageUrl = skinData.imageUrl
+        }
+      }
+      
+      // Create character with all data
+      return {
+        playerId: playerId.toString(),
+        name: nameData.fullName,
+        nameData: {
+          firstName: nameData.firstName,
+          surname: nameData.surname,
+          fullName: nameData.fullName
+        },
+        imageUrl,
+        stance,
+        weapon,
+        armor,
+        strength: rawData.attributes.strength,
+        constitution: rawData.attributes.constitution,
+        size: rawData.attributes.size,
+        agility: rawData.attributes.agility,
+        stamina: rawData.attributes.stamina,
+        luck: rawData.attributes.luck,
+        // Add battle stats
+        wins: rawData.wins,
+        losses: rawData.losses,
+        kills: rawData.kills,
+      }
+    },
+    enabled: Boolean(
+      playerId > 0 && 
+      rawData && 
+      nameData
+    ),
+  })
 }

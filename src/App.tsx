@@ -1,3 +1,4 @@
+// DEPRECATED FILE
 import { useRef, useState } from "react";
 import { type IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import type { MainMenu } from "./game/scenes/MainMenu";
