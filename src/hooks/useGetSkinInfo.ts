@@ -20,11 +20,10 @@ export function useGetSkinInfo({ skinIndecies }: { skinIndecies: number[] }) {
     chainId: 84532,
   }));
 
-
   const { data, isLoading, error } = useQuery({
     queryKey: ["skinData", skinIndecies],
     queryFn: () => multicall(config, { contracts: skinDataCalls }),
   });
-  
+
   return { data, isLoading, error };
 }

@@ -1,4 +1,4 @@
-import type { Scene, GameObjects } from "phaser";
+import type { GameObjects, Scene } from "phaser";
 
 interface PlayerStats {
   weapon?: string;
@@ -221,10 +221,10 @@ export class PlayerStatsDisplay {
     addTextRow(
       "ID",
       this.isRightSide
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        ? (this.scene as any).player2Id
-        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
-        : (this.scene as any).player1Id,
+        ? // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+          (this.scene as any).player2Id
+        : // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+          (this.scene as any).player1Id,
     );
 
     // Create background with calculated dimensions

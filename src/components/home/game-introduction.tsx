@@ -1,7 +1,7 @@
 // src/components/home/game-introduction.tsx
 "use client";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
@@ -24,19 +24,22 @@ export function GameIntroduction() {
   const gameSteps = [
     {
       title: "Choose Your Warrior",
-      description: "Select from legendary warriors, each with unique attribute distributions that affect combat calculations.",
+      description:
+        "Select from legendary warriors, each with unique attribute distributions that affect combat calculations.",
       imageUrl: "/images/intro/select-warrior.webp",
       icon: "🛡️",
     },
     {
       title: "Select Your Strategy",
-      description: "Equip skins that determine your weapon, armor, and fighting stance. Each combination has unique strengths and weaknesses.",
+      description:
+        "Equip skins that determine your weapon, armor, and fighting stance. Each combination has unique strengths and weaknesses.",
       imageUrl: "/images/intro/combat.webp",
       icon: "⚔️",
     },
     {
       title: "Watch Battles Unfold",
-      description: "Witness automatic turn-based combat where initiative, hit chance, blocks, and critical strikes determine the victor.",
+      description:
+        "Witness automatic turn-based combat where initiative, hit chance, blocks, and critical strikes determine the victor.",
       imageUrl: "/images/intro/victory.webp",
       icon: "👑",
     },

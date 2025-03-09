@@ -1,9 +1,9 @@
 // src/components/home/character-gallery.tsx
 "use client";
-import { motion } from "framer-motion";
-import CharacterCard from "../CharacterCard";
 import type { Character } from "@/types/player.types";
 import { usePrivy } from "@privy-io/react-auth";
+import { motion } from "framer-motion";
+import CharacterCard from "../CharacterCard";
 import { CTAButton as CTAButtonComponent } from "../ui/cta-button";
 interface CharacterGalleryProps {
   characters: Character[];

@@ -1,17 +1,17 @@
 // src/components/home/authenticated-view.tsx
 "use client";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import type { Character } from "@/types/player.types";
-import { useState, useRef, useEffect } from "react";
-import React from "react";
-import { ChevronDown } from "lucide-react";
-import { BattleSection } from "../battle/battle-section";
-import { useInView } from "react-intersection-observer";
 import { usePlayer } from "@/store/player-context";
+import type { Character } from "@/types/player.types";
+import { motion } from "framer-motion";
+import { ChevronDown } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import React from "react";
+import { useInView } from "react-intersection-observer";
+import { useAccount } from "wagmi";
+import { BattleSection } from "../battle/battle-section";
 import { WarriorSelection } from "../character/warrior-selection";
 import { SectionHeader } from "../ui/section-header";
-import { useAccount } from "wagmi";
 
 export function AuthenticatedView() {
   // const { players } = useOwnedPlayers();

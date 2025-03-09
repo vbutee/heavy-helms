@@ -1,12 +1,12 @@
 "use client";
 
-import { CharacterCard } from "./character-card";
-import { NewCharacterCard } from "./new-character-card";
-import { useRef } from "react";
+import { usePlayer } from "@/store/player-context";
 import type { Character } from "@/types/player.types";
 import { useRouter } from "next/navigation";
-import { usePlayer } from "@/store/player-context";
+import { useRef } from "react";
 import { SectionHeader } from "../ui/section-header";
+import { CharacterCard } from "./character-card";
+import { NewCharacterCard } from "./new-character-card";
 
 interface WarriorSelectionProps {
   characters: Character[];

@@ -1,23 +1,23 @@
-import { parseEventLogs, type Address } from "viem";
+import { viemClient } from "@/config";
+import { Alchemy } from "alchemy-sdk";
+import { type Address, parseEventLogs } from "viem";
+import { toHex, keccak256 as viemKeccak256 } from "viem";
+import { mainnet } from "viem/chains";
+import {
+  DefaultPlayerABI,
+  DuelGameABI,
+  GameEngineABI,
+  MonsterABI,
+  PlayerABI,
+  PracticeGameABI,
+} from "../abi";
+import { type AbiType, getAbiForType } from "./abi-utils";
 import {
   CombatResultType,
   WinCondition,
   getEnumKeyByValue,
 } from "./combat-decoder";
-import { mainnet } from "viem/chains";
-import {
-  PracticeGameABI,
-  GameEngineABI,
-  PlayerABI,
-  DefaultPlayerABI,
-  MonsterABI,
-  DuelGameABI,
-} from "../abi";
-import { keccak256 as viemKeccak256, toHex } from "viem";
-import { Alchemy } from "alchemy-sdk";
-import { getFighterType, getContractInfo } from "./fighter-types";
-import { type AbiType, getAbiForType } from "./abi-utils";
-import { viemClient } from "@/config";
+import { getContractInfo, getFighterType } from "./fighter-types";
 
 interface CombatAction {
   p1Result: number;
@@ -59,7 +59,6 @@ async function decodeCombatBytes(
   bytes: `0x${string}`,
   network: string,
 ): Promise<DecodedCombatResult> {
-
   const gameContractAddress = process.env
     .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address;
 
@@ -115,7 +114,6 @@ export async function loadCombatBytes(
   try {
     const networkName = process.env.NEXT_PUBLIC_ALCHEMY_NETWORK?.toLowerCase();
     if (!networkName) throw new Error("Network name not configured");
-
 
     const gameContractAddress = process.env
       .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as Address;

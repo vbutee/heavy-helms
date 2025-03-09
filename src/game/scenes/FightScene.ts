@@ -3,15 +3,15 @@ import { EventBus } from "../EventBus";
 import { createPlayerAnimations } from "../systems/animation-system";
 import { loadCombatBytes } from "../utils/combat-loader";
 
+import { DamageNumbers } from "../objects/DamageNumbers";
 // These imports need to use the correct TypeScript file paths
 // Using placeholder paths until we find the correct ones
 import { CombatAnimator } from "../systems/combat/combat-animator";
-import { CombatSequenceHandler } from "../systems/combat/combat-sequence-handler";
-import { VictoryHandler } from "../systems/combat/victory-handler";
-import { HealthManager } from "../systems/combat/health-manager";
-import { DebugHealthManager } from "../systems/combat/debug-health-manager";
-import { DamageNumbers } from "../objects/DamageNumbers";
 import { CombatAudioManager } from "../systems/combat/combat-audio-manager";
+import { CombatSequenceHandler } from "../systems/combat/combat-sequence-handler";
+import { DebugHealthManager } from "../systems/combat/debug-health-manager";
+import { HealthManager } from "../systems/combat/health-manager";
+import { VictoryHandler } from "../systems/combat/victory-handler";
 import { PlayerStatsDisplay } from "../ui/PlayerStatsDisplay";
 
 interface PlayerStats {

@@ -1,7 +1,7 @@
 "use client";
-import { usePrivy } from "@privy-io/react-auth";
 import { Button } from "@/components/ui/button";
 import { useWallet } from "@/hooks/use-wallet";
+import { usePrivy } from "@privy-io/react-auth";
 
 export function ChainSelection() {
   const { ready, authenticated } = usePrivy();

@@ -1,4 +1,4 @@
-import type { Scene, GameObjects } from "phaser";
+import type { GameObjects, Scene } from "phaser";
 import { VALID_ANIMATIONS } from "../animation-system";
 
 type AnimationType = keyof typeof VALID_ANIMATIONS;

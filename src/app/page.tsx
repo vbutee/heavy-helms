@@ -1,12 +1,12 @@
 "use client";
 
-import { usePrivy } from "@privy-io/react-auth";
-// Import types
-import type { Character } from "@/types/player.types";
+import { AuthenticatedView } from "@/components/home/authenticated-view";
 import { CharacterGallery } from "@/components/home/character-gallery";
 import { CommunityStats } from "@/components/home/community-stats";
 import { GameIntroduction } from "@/components/home/game-introduction";
-import { AuthenticatedView } from "@/components/home/authenticated-view";
+// Import types
+import type { Character } from "@/types/player.types";
+import { usePrivy } from "@privy-io/react-auth";
 
 // Sample character data - will be moved to a service later
 const characters: Character[] = [

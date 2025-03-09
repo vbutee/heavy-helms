@@ -1,9 +1,9 @@
 "use client";
 
-import { motion } from "framer-motion";
-import type { Character } from "@/types/player.types";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import type { Character } from "@/types/player.types";
+import { motion } from "framer-motion";
+import Image from "next/image";
 
 interface CharacterCardProps {
   character: Character;

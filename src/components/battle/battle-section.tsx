@@ -1,11 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { motion } from "framer-motion";
 import type { Character } from "@/types/player.types";
-import { SectionHeader } from "../ui/section-header";
+import { motion } from "framer-motion";
 import { ChevronUp } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { CTAButton } from "../ui/cta-button";
+import { SectionHeader } from "../ui/section-header";
 
 interface BattleSectionProps {
   selectedCharacter: Character | null;

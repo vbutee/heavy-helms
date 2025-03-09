@@ -1,29 +1,29 @@
-// src/hooks/use-player-data.ts
-import { useQuery } from "@tanstack/react-query"
-import type { Address } from "viem"
-import { useAccount } from "wagmi"
-import type { Character, Stance, Armor, Weapon } from "@/types/player.types"
-import { 
-  getPlayerIds, 
-  getPlayerData, 
-  getPlayerName, 
+import {
+  PlayerName,
+  SkinData,
+  getPlayerData,
+  getPlayerIds,
+  getPlayerName,
   getSkinData,
   loadSkinMetadata,
-  PlayerName,
-  SkinData
-} from "@/lib/contracts/player-contract"
-import { useWallets } from "@privy-io/react-auth"
+} from "@/lib/contracts/player-contract";
+import type { Armor, Character, Stance, Weapon } from "@/types/player.types";
+import { useWallets } from "@privy-io/react-auth";
+// src/hooks/use-player-data.ts
+import { useQuery } from "@tanstack/react-query";
+import type { Address } from "viem";
+import { useAccount } from "wagmi";
 
 // Utility functions for mapping contract values to domain types
 function mapStanceToString(stanceValue: number | string): Stance {
   const stanceMap: Record<number, Stance> = {
     0: "offensive",
     1: "defensive",
-    2: "balanced"
-  }
-  
-  const numValue = Number(stanceValue)
-  return stanceMap[numValue] || "balanced"
+    2: "balanced",
+  };
+
+  const numValue = Number(stanceValue);
+  return stanceMap[numValue] || "balanced";
 }
 
 function mapWeaponToString(weaponValue: number | string): Weapon {
@@ -34,11 +34,11 @@ function mapWeaponToString(weaponValue: number | string): Weapon {
     3: "Greatsword",
     4: "Battleaxe",
     5: "Spear",
-    6: "Quarterstaff"
-  }
-  
-  const numValue = Number(weaponValue)
-  return weaponMap[numValue] || "Sword + Shield"
+    6: "Quarterstaff",
+  };
+
+  const numValue = Number(weaponValue);
+  return weaponMap[numValue] || "Sword + Shield";
 }
 
 function mapArmorToString(armorValue: number | string): Armor {
@@ -46,11 +46,11 @@ function mapArmorToString(armorValue: number | string): Armor {
     0: "Cloth",
     1: "Leather",
     2: "Chain",
-    3: "Plate"
-  }
-  
-  const numValue = Number(armorValue)
-  return armorMap[numValue] || "Cloth"
+    3: "Plate",
+  };
+
+  const numValue = Number(armorValue);
+  return armorMap[numValue] || "Cloth";
 }
 
 // Individual hooks for different pieces of data
@@ -58,11 +58,11 @@ export function usePlayerIds(address?: Address) {
   return useQuery({
     queryKey: ["playerIds", address],
     queryFn: async () => {
-      if (!address) return []
-      return getPlayerIds(address)
+      if (!address) return [];
+      return getPlayerIds(address);
     },
-    enabled: Boolean(address)
-  })
+    enabled: Boolean(address),
+  });
 }
 
 export function usePlayerData(playerId: number) {
@@ -70,7 +70,7 @@ export function usePlayerData(playerId: number) {
     queryKey: ["playerData", playerId],
     queryFn: () => getPlayerData(playerId),
     enabled: playerId > 0,
-  })
+  });
 }
 
 export function usePlayerName(firstNameIndex?: number, surnameIndex?: number) {
@@ -78,8 +78,10 @@ export function usePlayerName(firstNameIndex?: number, surnameIndex?: number) {
     queryKey: ["playerName", firstNameIndex, surnameIndex],
     // biome-ignore lint/style/noNonNullAssertion: <explanation>
     queryFn: () => getPlayerName(firstNameIndex!, surnameIndex!),
-    enabled: Boolean(firstNameIndex !== undefined && surnameIndex !== undefined),
-  })
+    enabled: Boolean(
+      firstNameIndex !== undefined && surnameIndex !== undefined,
+    ),
+  });
 }
 
 // Hook for skin data
@@ -88,7 +90,7 @@ export function useSkinData(playerId: number) {
     queryKey: ["skinData", playerId],
     queryFn: () => getSkinData(playerId),
     enabled: playerId > 0,
-  })
+  });
 }
 
 // Main hook that combines all data - enhanced with name data
@@ -97,66 +99,67 @@ export function useOwnedPlayers(options: { enabled?: boolean } = {}) {
   const address = wallets?.find(
     (wallet) => wallet.connectorType === "embedded",
   )?.address;
-  
+
   // Step 1: Get player IDs
-  const { 
+  const {
     data: playerIds,
     isLoading: isLoadingIds,
     error: idsError,
-  } = usePlayerIds(address as Address)
-  
+  } = usePlayerIds(address as Address);
+
   // Step 2: Get player data for each ID
   const {
     data: players,
     isLoading: isLoadingPlayers,
     error: playersError,
-    refetch
+    refetch,
   } = useQuery({
     queryKey: ["players", address],
     queryFn: async (): Promise<Character[]> => {
-      if (!playerIds || !playerIds.length) return []
-      
+      if (!playerIds || !playerIds.length) return [];
+
       // Step 2.1: Fetch basic player data for all IDs
       const playerDataPromises = playerIds.map(async (playerId) => {
         try {
           // Get raw player data
-          const rawData = await getPlayerData(playerId)
-          if (!rawData) return null
-          
+          const rawData = await getPlayerData(playerId);
+          if (!rawData) return null;
+
           // Step 2.2: Fetch player name - following Preloader.ts pattern
           const nameData = await getPlayerName(
             rawData.firstNameIndex,
-            rawData.surnameIndex
-          )
-          
+            rawData.surnameIndex,
+          );
+
           // Step 2.3: Get skin data if available
-          let stance: Stance = "balanced"
-          let weapon: Weapon = "Sword + Shield"
-          let armor: Armor = "Cloth"
-          let imageUrl = "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW" // Default
-          
+          let stance: Stance = "balanced";
+          let weapon: Weapon = "Sword + Shield";
+          let armor: Armor = "Cloth";
+          let imageUrl =
+            "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW"; // Default
+
           // Process skin data to extract equipment
-          const skinData = await getSkinData(playerId)
+          const skinData = await getSkinData(playerId);
           if (skinData) {
             // Map equipment types based on skin data
             if (skinData.weapon !== undefined) {
-              weapon = mapWeaponToString(skinData.weapon)
+              weapon = mapWeaponToString(skinData.weapon);
             }
-            
+
             if (skinData.armor !== undefined) {
-              armor = mapArmorToString(skinData.armor)
+              armor = mapArmorToString(skinData.armor);
             }
-            
+
             if (skinData.stance !== undefined) {
-              stance = mapStanceToString(skinData.stance)
+              stance = mapStanceToString(skinData.stance);
             }
-            
+
             // Set image URL if available
             if (skinData.imageUrl) {
-              imageUrl = skinData.imageUrl
+              imageUrl = skinData.imageUrl;
             }
           }
-          
+
           // Step 2.4: Map to Character type
           return {
             playerId: playerId.toString(),
@@ -171,74 +174,69 @@ export function useOwnedPlayers(options: { enabled?: boolean } = {}) {
             agility: rawData.attributes.agility,
             stamina: rawData.attributes.stamina,
             luck: rawData.attributes.luck,
-          }
+          };
         } catch (error) {
-          console.error(`Error fetching data for player ${playerId}:`, error)
-          return null
+          console.error(`Error fetching data for player ${playerId}:`, error);
+          return null;
         }
-      })
-      
+      });
+
       // Wait for all promises to resolve and filter out nulls
-      const results = await Promise.all(playerDataPromises)
-      return results.filter(Boolean) as Character[]
+      const results = await Promise.all(playerDataPromises);
+      return results.filter(Boolean) as Character[];
     },
     enabled: Boolean(
-      address && 
-      playerIds &&
-      playerIds.length > 0 &&
-      options.enabled !== false
+      address && playerIds && playerIds.length > 0 && options.enabled !== false,
     ),
-  })
-  
+  });
+
   return {
     players,
     isLoading: isLoadingIds || isLoadingPlayers,
     error: idsError || playersError,
     refetch,
-  }
+  };
 }
 
 // Advanced hook for detailed player data with all components
 export function useDetailedPlayerData(playerId: number) {
   // Base player data
-  const { data: rawData, isLoading: isLoadingRaw } = usePlayerData(playerId)
-  
+  const { data: rawData, isLoading: isLoadingRaw } = usePlayerData(playerId);
+
   // Player name
-  const { 
-    data: nameData, 
-    isLoading: isLoadingName 
-  } = usePlayerName(
+  const { data: nameData, isLoading: isLoadingName } = usePlayerName(
     rawData?.firstNameIndex,
-    rawData?.surnameIndex
-  )
-  
+    rawData?.surnameIndex,
+  );
+
   // Skin data
-  const { data: skinData, isLoading: isLoadingSkin } = useSkinData(playerId)
-  
+  const { data: skinData, isLoading: isLoadingSkin } = useSkinData(playerId);
+
   // Combine all data
   return useQuery({
     queryKey: ["detailedPlayer", playerId, rawData, nameData, skinData],
     queryFn: async (): Promise<Character | null> => {
-      if (!rawData || !nameData) return null
-      
+      if (!rawData || !nameData) return null;
+
       // Map equipment from skin data
-      let stance: Stance = "balanced"
-      let weapon: Weapon = "Sword + Shield"
-      let armor: Armor = "Cloth"
-      let imageUrl = "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW" // Default
-      
+      let stance: Stance = "balanced";
+      let weapon: Weapon = "Sword + Shield";
+      let armor: Armor = "Cloth";
+      let imageUrl =
+        "https://ipfs.io/ipfs/QmaALMyYXwHuwu2EvDrLjkqFK9YigUb6RD9FX7MqVGoDkW"; // Default
+
       if (skinData) {
         // Map equipment types
-        weapon = mapWeaponToString(skinData.weapon || 0)
-        armor = mapArmorToString(skinData.armor || 0)
-        stance = mapStanceToString(skinData.stance || 0)
-        
+        weapon = mapWeaponToString(skinData.weapon || 0);
+        armor = mapArmorToString(skinData.armor || 0);
+        stance = mapStanceToString(skinData.stance || 0);
+
         // Use skin image URL if available
         if (skinData.imageUrl) {
-          imageUrl = skinData.imageUrl
+          imageUrl = skinData.imageUrl;
         }
       }
-      
+
       // Create character with all data
       return {
         playerId: playerId.toString(),
@@ -246,7 +244,7 @@ export function useDetailedPlayerData(playerId: number) {
         nameData: {
           firstName: nameData.firstName,
           surname: nameData.surname,
-          fullName: nameData.fullName
+          fullName: nameData.fullName,
         },
         imageUrl,
         stance,
@@ -262,12 +260,8 @@ export function useDetailedPlayerData(playerId: number) {
         wins: rawData.wins,
         losses: rawData.losses,
         kills: rawData.kills,
-      }
+      };
     },
-    enabled: Boolean(
-      playerId > 0 && 
-      rawData && 
-      nameData
-    ),
-  })
+    enabled: Boolean(playerId > 0 && rawData && nameData),
+  });
 }

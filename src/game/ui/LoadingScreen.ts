@@ -1,4 +1,4 @@
-import type { Scene, GameObjects } from "phaser";
+import type { GameObjects, Scene } from "phaser";
 
 export class LoadingScreen {
   private scene: Scene;

@@ -1,8 +1,8 @@
 import { AUTO, Game } from "phaser";
 import { EventBus } from "../EventBus";
 import { Boot } from "../scenes/Boot";
-import { Preloader } from "../scenes/Preloader";
 import { FightScene } from "../scenes/FightScene";
+import { Preloader } from "../scenes/Preloader";
 
 // Game configuration interface
 interface GameConfig {

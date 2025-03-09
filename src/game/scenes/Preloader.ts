@@ -1,15 +1,15 @@
+import { viemClient } from "@/config";
 import { Scene } from "phaser";
 import { http } from "viem";
 import { EventBus } from "../EventBus";
-import { loadCharacterData } from "../utils/nft-loader";
-import { loadDuelDataFromTx } from "../utils/combat-loader";
 import {
   DefaultPlayerSkinNFTABI,
-  PracticeGameABI,
   PlayerABI,
+  PracticeGameABI,
   SkinRegistryABI,
 } from "../abi";
-import { viemClient } from "@/config";
+import { loadDuelDataFromTx } from "../utils/combat-loader";
+import { loadCharacterData } from "../utils/nft-loader";
 
 // Define types for combat data
 interface CombatBytes {
@@ -73,15 +73,15 @@ export class Preloader extends Scene {
   init() {
     // Parse URL parameters
     const params = new URLSearchParams(window.location.search);
-    
+
     const txIdParam = params.get("txId");
     this.txId = txIdParam || undefined;
-    
+
     this.network =
       params.get("network") ||
       process.env.NEXT_PUBLIC_ALCHEMY_NETWORK ||
       "mainnet";
-    
+
     this.blockNumber = params.get("blockNumber") || "123456"; // Default block number
 
     // Only set player IDs if no txId (practice mode) and if provided in URL
@@ -158,8 +158,8 @@ export class Preloader extends Scene {
 
   preload() {
     // Set up loading events
-    this.load.on('complete', this.onLoadComplete, this);
-    
+    this.load.on("complete", this.onLoadComplete, this);
+
     // Emit status update
     this.events.emit("status-update", "Loading game assets...");
 
@@ -176,7 +176,10 @@ export class Preloader extends Scene {
     try {
       // Load blockchain data
       if (this.txId) {
-        this.events.emit("status-update", "Loading combat data from blockchain...");
+        this.events.emit(
+          "status-update",
+          "Loading combat data from blockchain...",
+        );
         await this.loadDuelData();
       } else if (!this.player1Id || !this.player2Id) {
         this.events.emit("status-update", "Selecting random players...");
@@ -199,7 +202,7 @@ export class Preloader extends Scene {
           this.player1Data.jsonData,
         );
       }
-      
+
       if (this.player2Data?.spritesheetUrl && this.player2Data?.jsonData) {
         this.load.atlas(
           `player${this.player2Id}`,
@@ -214,10 +217,10 @@ export class Preloader extends Scene {
       }
 
       // Remove the complete listener to avoid duplicate calls
-      this.load.off('complete', this.onLoadComplete, this);
+      this.load.off("complete", this.onLoadComplete, this);
 
       // Add a new one-time listener for the player assets
-      this.load.once('complete', () => {
+      this.load.once("complete", () => {
         console.log("All assets loaded successfully");
         this.preloadComplete = true;
         // Start the next scene
@@ -226,7 +229,6 @@ export class Preloader extends Scene {
 
       // Start loading the queued player assets
       this.load.start();
-
     } catch (error) {
       console.error("Error in load complete:", error);
       const errorText = this.add
@@ -258,12 +260,12 @@ export class Preloader extends Scene {
           txId: this.txId || "Practice",
           combatBytes: this.combatBytesFromTx,
         };
-        
+
         this.scene.start("FightScene", sceneData);
       } else {
         // Fallback to default players if something went wrong
         const fallbackData = this.createFallbackPlayerData();
-        
+
         this.scene.start("FightScene", {
           player1Id: "1",
           player2Id: "2",
@@ -326,25 +328,34 @@ export class Preloader extends Scene {
       if (!this.txId) {
         return null;
       }
-      
+
       const duelData = await loadDuelDataFromTx(this.txId, this.network);
-      
+
       if (!duelData) {
         return null;
       }
-      
+
       this.player1Id = String(duelData.player1Id);
       this.player2Id = String(duelData.player2Id);
-      
+
       this.combatBytesFromTx = {
         ...duelData,
-        player1Id: typeof duelData.player1Id === 'bigint' ? duelData.player1Id : BigInt(duelData.player1Id),
-        player2Id: typeof duelData.player2Id === 'bigint' ? duelData.player2Id : BigInt(duelData.player2Id),
-        winningPlayerId: typeof duelData.winningPlayerId === 'bigint' ? duelData.winningPlayerId : BigInt(duelData.winningPlayerId || 0)
+        player1Id:
+          typeof duelData.player1Id === "bigint"
+            ? duelData.player1Id
+            : BigInt(duelData.player1Id),
+        player2Id:
+          typeof duelData.player2Id === "bigint"
+            ? duelData.player2Id
+            : BigInt(duelData.player2Id),
+        winningPlayerId:
+          typeof duelData.winningPlayerId === "bigint"
+            ? duelData.winningPlayerId
+            : BigInt(duelData.winningPlayerId || 0),
       };
-      
+
       this.blockNumber = duelData.blockNumber;
-      
+
       return duelData;
     } catch (error) {
       console.error("Error loading duel data:", error);
@@ -357,30 +368,30 @@ export class Preloader extends Scene {
       const networkName =
         process.env.NEXT_PUBLIC_ALCHEMY_NETWORK?.toLowerCase() || "mainnet";
       const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
-      
+
       if (!apiKey) {
         this.player1Id = "1";
         this.player2Id = "2";
         return;
       }
-      
+
       const transport = http(
         `https://${networkName}.g.alchemy.com/v2/${apiKey}`,
       );
-      
+
       // const client = createPublicClient({
       //   transport,
       // });
 
       const gameContractAddress = process.env
         .NEXT_PUBLIC_PRACTICE_GAME_CONTRACT_ADDRESS as `0x${string}`;
-      
+
       if (!gameContractAddress) {
         this.player1Id = "1";
         this.player2Id = "2";
         return;
       }
-      
+
       const playerContractAddress = await viemClient.readContract({
         address: gameContractAddress,
         abi: PracticeGameABI,
@@ -427,11 +438,11 @@ export class Preloader extends Scene {
       if (!this.player1Id) {
         return null;
       }
-      
+
       // Convert string IDs to numbers for the loadCharacterData function
       const p1Id = Number(this.player1Id);
       const p2Id = this.player2Id ? Number(this.player2Id) : null;
-      
+
       // Load player data using the real character loader
       const playerData = await Promise.all([
         loadCharacterData(p1Id),
@@ -440,7 +451,7 @@ export class Preloader extends Scene {
 
       // Convert the loaded data to our PlayerData format
       const [p1Data, p2Data] = playerData;
-      
+
       if (p1Data) {
         this.player1Data = {
           id: this.player1Id,
@@ -449,17 +460,17 @@ export class Preloader extends Scene {
             ...p1Data.stats,
             weapon: undefined,
             armor: undefined,
-            stance: undefined
+            stance: undefined,
           },
           spritesheetUrl: p1Data.spritesheetUrl,
-          jsonData: p1Data.jsonData
+          jsonData: p1Data.jsonData,
         };
       } else {
         this.player1Data = this.createFallbackPlayerData();
         this.player1Data.id = this.player1Id;
         this.player1Data.name = `Player ${this.player1Id}`;
       }
-      
+
       if (p2Data) {
         this.player2Data = {
           id: this.player2Id!,
@@ -468,15 +479,15 @@ export class Preloader extends Scene {
             ...p2Data.stats,
             weapon: undefined,
             armor: undefined,
-            stance: undefined
+            stance: undefined,
           },
           spritesheetUrl: p2Data.spritesheetUrl,
-          jsonData: p2Data.jsonData
+          jsonData: p2Data.jsonData,
         };
       } else if (this.player2Id) {
         // this.player2Data = this.createFallbackPlayerData();
       }
-      
+
       return [this.player1Data, this.player2Data];
     } catch (error) {
       // Create fallback data
@@ -485,46 +496,50 @@ export class Preloader extends Scene {
         this.player1Data.id = this.player1Id;
         this.player1Data.name = `Player ${this.player1Id}`;
       }
-      
+
       if (this.player2Id) {
         this.player2Data = this.createFallbackPlayerData();
         this.player2Data.id = this.player2Id;
         this.player2Data.name = `Player ${this.player2Id}`;
       }
-      
+
       return [this.player1Data, this.player2Data];
     }
   }
 
   async loadPlayerLoadouts() {
     try {
-      if (!this.player1Id || !this.player2Id || !this.player1Data || !this.player2Data) {
+      if (
+        !this.player1Id ||
+        !this.player2Id ||
+        !this.player1Data ||
+        !this.player2Data
+      ) {
         return;
       }
 
       const networkName =
         process.env.NEXT_PUBLIC_ALCHEMY_NETWORK?.toLowerCase() || "mainnet";
       const apiKey = process.env.NEXT_PUBLIC_ALCHEMY_API_KEY;
-      
+
       if (!apiKey) {
         this.setDefaultLoadouts();
         return;
       }
-      
+
       const transport = http(
         `https://${networkName}.g.alchemy.com/v2/${apiKey}`,
       );
-      
 
       // Get skin registry from player contract
       const playerContractAddress = process.env
         .NEXT_PUBLIC_PLAYER_CONTRACT_ADDRESS as `0x${string}`;
-      
+
       if (!playerContractAddress) {
         this.setDefaultLoadouts();
         return;
       }
-      
+
       // Get skin info for both players
       let skinInfo1, skinInfo2;
       try {
@@ -537,7 +552,7 @@ export class Preloader extends Scene {
       } catch (error) {
         skinInfo1 = null;
       }
-      
+
       try {
         skinInfo2 = await viemClient.readContract({
           address: playerContractAddress as `0x${string}`,
@@ -565,7 +580,7 @@ export class Preloader extends Scene {
       } catch (error) {
         loadout1 = null;
       }
-      
+
       try {
         if (skinInfo2 && skinInfo2.contractAddress) {
           loadout2 = await viemClient.readContract({

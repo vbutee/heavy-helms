@@ -1,4 +1,5 @@
 "use client";
+import { usePrivy, useWallets } from "@privy-io/react-auth";
 import {
   type ReactNode,
   createContext,
@@ -6,10 +7,9 @@ import {
   useEffect,
   useState,
 } from "react";
-import { usePrivy, useWallets } from "@privy-io/react-auth";
 import { toast } from "sonner";
-import { baseSepolia } from "viem/chains";
 import { getChainId } from "viem/actions";
+import { baseSepolia } from "viem/chains";
 
 // Base Sepolia Chain ID
 export const BASE_SEPOLIA_CHAIN_ID = 84532;

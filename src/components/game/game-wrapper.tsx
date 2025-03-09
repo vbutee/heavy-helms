@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import dynamic from "next/dynamic";
 import { X } from "lucide-react";
 import { Maximize2 } from "lucide-react";
 import { Volume2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { Button } from "../ui/button";
 import { VolumeX } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "../ui/button";
 
 // Dynamically import PhaserGame with no SSR
 const PhaserGame = dynamic(() => import("@/game/PhaserGame"), {

@@ -1,14 +1,14 @@
 import {
-  PracticeGameABI,
-  GameEngineABI,
-  PlayerABI,
   DefaultPlayerABI,
-  MonsterABI,
-  DuelGameABI,
-  SkinRegistryABI,
-  PlayerNameRegistryABI,
-  ERC721ABI,
   DefaultPlayerSkinNFTABI,
+  DuelGameABI,
+  ERC721ABI,
+  GameEngineABI,
+  MonsterABI,
+  PlayerABI,
+  PlayerNameRegistryABI,
+  PracticeGameABI,
+  SkinRegistryABI,
 } from "../abi";
 
 const abiMap = {

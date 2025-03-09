@@ -1,23 +1,18 @@
-import { Alchemy, type Network, type AlchemySettings } from "alchemy-sdk";
-import {
-
-  keccak256 as viemKeccak256,
-  toHex,
-  type Address,
-} from "viem";
-import {
-  PlayerABI,
-  SkinRegistryABI,
-  ERC721ABI,
-  PracticeGameABI,
-  PlayerNameRegistryABI,
-  MonsterABI,
-  DefaultPlayerABI,
-  GameEngineABI,
-} from "../abi";
-import { getFighterType, FighterType, getContractInfo } from "./fighter-types";
-import { type AbiType, getAbiForType } from "./abi-utils";
 import { viemClient } from "@/config";
+import { Alchemy, type AlchemySettings, type Network } from "alchemy-sdk";
+import { type Address, toHex, keccak256 as viemKeccak256 } from "viem";
+import {
+  DefaultPlayerABI,
+  ERC721ABI,
+  GameEngineABI,
+  MonsterABI,
+  PlayerABI,
+  PlayerNameRegistryABI,
+  PracticeGameABI,
+  SkinRegistryABI,
+} from "../abi";
+import { type AbiType, getAbiForType } from "./abi-utils";
+import { FighterType, getContractInfo, getFighterType } from "./fighter-types";
 
 interface PlayerAttributes {
   strength: number;
@@ -187,7 +182,6 @@ export async function loadCharacterData(
         playerName[1] = names[1];
         console.log("names:", names);
       }
-
 
       console.log("Player name:", playerName);
 

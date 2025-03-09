@@ -1,4 +1,4 @@
-import type { Scene, GameObjects } from "phaser";
+import type { GameObjects, Scene } from "phaser";
 import type { CombatResultType } from "../../utils/combat-decoder";
 import { COMBAT_RESULT_TO_ANIMATION } from "../animation-system";
 
