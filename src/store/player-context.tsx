@@ -24,6 +24,7 @@ interface PlayerContextType {
   createCharacter: () => Promise<void>;
   characters: Character[];
   refreshCharacters: () => Promise<void>;
+  isLoading: boolean;
 }
 
 const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
@@ -46,7 +47,11 @@ export function PlayerProvider({
   const [txHash, setTxHash] = useState<string | null>(null);
 
   // Use our improved hook to get characters
-  const { players = initialCharacters, refetch } = useOwnedPlayers({
+  const { 
+    players = initialCharacters, 
+    refetch,
+    isLoading
+  } = useOwnedPlayers({
     enabled: authenticated && !isWrongNetwork,
   });
 
@@ -232,6 +237,7 @@ export function PlayerProvider({
         createCharacter,
         characters: players,
         refreshCharacters,
+        isLoading,
       }}
     >
       {children}
