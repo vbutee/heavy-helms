@@ -1,6 +1,6 @@
 "use client";
 
-import type { CombatActionType } from "@/types/blockchain.types";
+import { CombatActionType } from "@/types/blockchain.types";
 import { useState } from "react";
 
 interface CombatAction {
@@ -42,13 +42,17 @@ function CombatActionButton({
   // Get action icon based on action type
   const getActionIcon = () => {
     switch (action.type) {
-      case "ATTACK":
+      case CombatActionType.ATTACK:
         return "⚔️";
-      case "DEFEND":
+      case CombatActionType.BLOCK:
         return "🛡️";
-      case "SPECIAL":
+      case CombatActionType.DODGE:
         return "✨";
-      case "REST":
+      case CombatActionType.COUNTER:
+        return "🔄";
+      case CombatActionType.PARRY:
+        return "🛡️";
+      case CombatActionType.REST:
         return "💤";
       default:
         return "❓";
@@ -57,6 +61,7 @@ function CombatActionButton({
 
   return (
     <button
+      type="button"
       className={`
         relative w-full py-3 px-4 mb-2
         bg-[length:100%_100%] bg-no-repeat bg-center

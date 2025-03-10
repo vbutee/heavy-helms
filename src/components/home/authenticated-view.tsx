@@ -8,7 +8,6 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { useInView } from "react-intersection-observer";
-import { useAccount } from "wagmi";
 import { BattleSection } from "../battle/battle-section";
 import { WarriorSelection } from "../character/warrior-selection";
 import { SectionHeader } from "../ui/section-header";

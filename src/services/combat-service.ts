@@ -229,23 +229,25 @@ function determineCombatResult(
 
   // Check defender's action
   switch (defenderAction) {
-    case "block":
+    case "block": {
       // Check if block is successful
       const blockRoll = Math.random() * 100;
       if (blockRoll <= defenderStats.blockChance && defenderEndurance >= 5) {
         return "blocked";
       }
       break;
+    }
 
-    case "dodge":
+    case "dodge": {
       // Check if dodge is successful
       const dodgeRoll = Math.random() * 100;
       if (dodgeRoll <= defenderStats.dodgeChance && defenderEndurance >= 15) {
         return "dodged";
       }
       break;
+    }
 
-    case "counter":
+    case "counter": {
       // Check if counter is successful
       const counterRoll = Math.random() * 100;
       if (
@@ -255,14 +257,16 @@ function determineCombatResult(
         return "countered";
       }
       break;
+    }
 
-    case "parry":
+    case "parry": {
       // Check if parry is successful
       const parryRoll = Math.random() * 100;
       if (parryRoll <= defenderStats.parryChance && defenderEndurance >= 15) {
         return "parried";
       }
       break;
+    }
   }
 
   // If no special result, check for hit or miss
