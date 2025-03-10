@@ -8,15 +8,13 @@ import { ChevronDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import React from "react";
 import { useInView } from "react-intersection-observer";
-import { useAccount } from "wagmi";
 import { BattleSection } from "../battle/battle-section";
 import { WarriorSelection } from "../character/warrior-selection";
 import { SectionHeader } from "../ui/section-header";
 
 export function AuthenticatedView() {
   // const { players } = useOwnedPlayers();
-  const { characters: players } = usePlayer();
-  console.log("players", players);
+;
   const [selectedCharacter, setSelectedCharacter] = useState<Character | null>(
     null,
   );
@@ -65,7 +63,6 @@ export function AuthenticatedView() {
           selectedCharacter={selectedCharacter}
           onSelectCharacter={handleSelectCharacter}
           onDeselectCharacter={handleDeselectCharacter}
-          characters={players}
         />
 
         {/* Scroll indicator - only show when a character is selected and battle section is not in view */}

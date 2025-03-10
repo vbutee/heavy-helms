@@ -1,8 +1,8 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { CardContainer } from "@/components/character/card-container";
 import type { Character } from "@/types/player.types";
-import { motion } from "framer-motion";
 import Image from "next/image";
 
 interface CharacterCardProps {
@@ -23,24 +23,7 @@ export function CharacterCard({
   onViewDetails,
 }: CharacterCardProps) {
   return (
-    <motion.div
-      className={`min-w-[220px] bg-gradient-to-b from-amber-900/20 to-stone-900/40 rounded-lg ${
-        isSelected
-          ? "border-2 border-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.3)]"
-          : "border border-yellow-600/30"
-      } overflow-hidden snap-start transition-all duration-300`}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{
-        opacity: 1,
-        y: 0,
-        scale: isSelected ? 1.03 : 1,
-      }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      whileHover={{
-        scale: isSelected ? 1.03 : 1.02,
-        borderColor: isSelected ? "rgba(234,179,8,1)" : "rgba(217,119,6,0.5)",
-      }}
-    >
+    <CardContainer index={index} isSelected={isSelected}>
       <div className="aspect-square relative bg-gradient-to-b from-stone-800/30 to-stone-900/30 overflow-hidden">
         <Image
           src={
@@ -109,6 +92,6 @@ export function CharacterCard({
           </Button>
         </div>
       </div>
-    </motion.div>
+    </CardContainer>
   );
 }

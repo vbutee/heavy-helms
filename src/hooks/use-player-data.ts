@@ -9,10 +9,8 @@ import {
 } from "@/lib/contracts/player-contract";
 import type { Armor, Character, Stance, Weapon } from "@/types/player.types";
 import { useWallets } from "@privy-io/react-auth";
-// src/hooks/use-player-data.ts
 import { useQuery } from "@tanstack/react-query";
 import type { Address } from "viem";
-import { useAccount } from "wagmi";
 
 // Utility functions for mapping contract values to domain types
 function mapStanceToString(stanceValue: number | string): Stance {
